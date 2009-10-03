@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShooterDownloader", "Shoote
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncodingTools", "EncodingTools\EncodingTools.csproj", "{CA19D4DE-B232-491A-92BF-7BF3A2758694}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ShooterDownloaderSetup", "ShooterDownloaderSetup\ShooterDownloaderSetup.vdproj", "{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,12 @@ Global
 		{CA19D4DE-B232-491A-92BF-7BF3A2758694}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{CA19D4DE-B232-491A-92BF-7BF3A2758694}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CA19D4DE-B232-491A-92BF-7BF3A2758694}.Release|Win32.ActiveCfg = Release|Any CPU
+		{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}.Debug|Any CPU.ActiveCfg = Debug
+		{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}.Debug|Win32.ActiveCfg = Debug
+		{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}.Release|Any CPU.ActiveCfg = Release
+		{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}.Release|Mixed Platforms.ActiveCfg = Release
+		{7A8CBD5F-0D39-4AA2-A302-55FE5C7E3683}.Release|Win32.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
