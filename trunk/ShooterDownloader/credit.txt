@@ -1,0 +1,9 @@
+EncodingTools:
+Detect Encoding for in- and outgoing text
+By Carsten Zeumer
+http://www.codeproject.com/KB/recipes/DetectEncoding.aspx
+
+
+Application Icon:
+Application icon comes from Tango Icon Library
+http://tango.freedesktop.org/Tango_Icon_Library
