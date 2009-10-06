@@ -1,4 +1,0 @@
-Detect Encoding for in- and outgoing text
-By Carsten Zeumer
-
-http://www.codeproject.com/KB/recipes/DetectEncoding.aspx

@@ -159,8 +159,14 @@ namespace ShooterDownloader
                     }
 
                     object[] newRow = { selected, fileInfo.Name, "", fileInfo.FullName };
+                    int rowIdx = dgvFileList.Rows.Add(newRow);
 
-                    dgvFileList.Rows.Add(newRow);
+                    if (selected)
+                    {
+                        //change the background color of video files
+                        DataGridViewRow dataRow = dgvFileList.Rows[rowIdx];
+                        dataRow.DefaultCellStyle.BackColor = Color.AntiqueWhite;
+                    }
                 }
             }
         }
@@ -184,12 +190,19 @@ namespace ShooterDownloader
 
         private void btnStartBatch_Click(object sender, EventArgs e)
         {
-            DisableInput();
-            ClearDownloadDtatus();
+            bool shouldDisableInput = true;
+
             foreach (DataGridViewRow row in dgvFileList.Rows)
             {
                 if ((bool)row.Cells["CheckBoxColumn"].Value == true)
                 {
+                    if (shouldDisableInput == true)
+                    {
+                        //disable input if there is at least one checked column.
+                        DisableInput();
+                        ClearDownloadDtatus();
+                        shouldDisableInput = false;
+                    }
                     string filePath = (string)row.Cells["FullPathColumn"].Value;
 
                     ShooterDownloadJob dlJob = new ShooterDownloadJob();
