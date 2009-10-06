@@ -19,7 +19,7 @@
     <ManifestCertificateThumbprint>B7F5D0B9A183FB05CFA402584465228EB18CEE15</ManifestCertificateThumbprint>
     <ManifestKeyFile>ShooterSubDownloader_TemporaryKey.pfx</ManifestKeyFile>
     <GenerateManifests>true</GenerateManifests>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -116,12 +116,6 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EncodingTools\EncodingTools.csproj">
-      <Project>{CA19D4DE-B232-491A-92BF-7BF3A2758694}</Project>
-      <Name>EncodingTools</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
       <ProductName>.NET Framework Client Profile</ProductName>
@@ -150,6 +144,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NCharDet\NCharDet.csproj">
+      <Project>{F05A47FB-8C96-4F21-AC03-EF4E75AEBB63}</Project>
+      <Name>NCharDet</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

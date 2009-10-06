@@ -160,7 +160,7 @@ namespace ShooterDownloader.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} 字幕不是簡體，不用轉換。.
+        ///   Looks up a localized string similar to {0} 字幕不是簡體，不用轉換.
         /// </summary>
         internal static string InfoNoConversion {
             get {
@@ -169,7 +169,7 @@ namespace ShooterDownloader.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} 找到簡體字幕，轉換成繁體字幕。.
+        ///   Looks up a localized string similar to {0} 開始將字幕轉成繁體.
         /// </summary>
         internal static string InfoStartChtConversion {
             get {
@@ -178,7 +178,7 @@ namespace ShooterDownloader.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} 字幕下載完成。.
+        ///   Looks up a localized string similar to {0} 字幕下載完成.
         /// </summary>
         internal static string InfoSubDownloadOk {
             get {

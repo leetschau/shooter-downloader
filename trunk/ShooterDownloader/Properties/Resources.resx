@@ -151,13 +151,13 @@
     <value>{0} 工作取消</value>
   </data>
   <data name="InfoNoConversion" xml:space="preserve">
-    <value>{0} 字幕不是簡體，不用轉換。</value>
+    <value>{0} 字幕不是簡體，不用轉換</value>
   </data>
   <data name="InfoStartChtConversion" xml:space="preserve">
-    <value>{0} 找到簡體字幕，轉換成繁體字幕。</value>
+    <value>{0} 開始將字幕轉成繁體</value>
   </data>
   <data name="InfoSubDownloadOk" xml:space="preserve">
-    <value>{0} 字幕下載完成。</value>
+    <value>{0} 字幕下載完成</value>
   </data>
   <data name="InfoSubFound" xml:space="preserve">
     <value>{0} 已找到 {1} 個字幕</value>

@@ -26,7 +26,7 @@ using System.Reflection;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using ShooterDownloader.Properties;
-using href.Utils;
+using org.mozilla.intl.chardet;
 
 namespace ShooterDownloader
 {
@@ -164,12 +164,13 @@ namespace ShooterDownloader
 
             try
             {
-                reader = EncodingTools.OpenTextFile(inFile);
-                if (reader.CurrentEncoding == Encoding.GetEncoding("GB2312"))
+                Encoding inEncoding = DetectEncoding(inFile);
+                if (inEncoding != null && inEncoding.CodePage == 936)  //If the encoding is GB2312
                 {
+                    reader = new StreamReader(inFile, inEncoding);
                     outStream = new FileStream(outFile, FileMode.OpenOrCreate);
-                    Encoding enc = Encoding.GetEncoding("Big5");
-                    writer = new StreamWriter(outStream, enc);
+                    Encoding outEncoding = Encoding.GetEncoding("Big5");
+                    writer = new StreamWriter(outStream, outEncoding);
                     string line = null;
                     while ((line = reader.ReadLine()) != null)
                     {
@@ -179,12 +180,12 @@ namespace ShooterDownloader
                         writer.WriteLine(chtLine);
                     }
 
-                    
+
                     ret = ConversionResult.OK;
+
                 }
                 else
                 {
-                    
                     ret = ConversionResult.NoConversion;
                 }
                 
@@ -212,6 +213,69 @@ namespace ShooterDownloader
             }
 
             return ret;
+        }
+
+        public static volatile bool encodingFound;
+        public static volatile string encodingName = String.Empty;
+
+        public static Encoding DetectEncoding(string filePath)
+        {
+            FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            Encoding encoding = null;
+
+
+            nsDetector det = new nsDetector();
+            Notifier not = new Notifier();
+            det.Init(not);
+
+            bool done = false;
+            bool isAscii = true;
+
+            byte[] buf = new byte[1024];
+            int len = fs.Read(buf, 0, buf.Length);
+
+            while (len > 0)
+            {
+                // Check if the stream is only ascii.
+                if (isAscii)
+                    isAscii = det.isAscii(buf, len);
+
+                // DoIt if non-ascii and not done yet.
+                if (!isAscii && !done)
+                    done = det.DoIt(buf, len, false);
+
+                len = fs.Read(buf, 0, buf.Length);
+            }
+            fs.Close();
+            det.DataEnd();
+
+            if (isAscii)
+            {
+                encodingFound = true;
+                encoding = Encoding.ASCII;
+            }
+
+            if (!encodingFound)
+            {
+                String[] prob = det.getProbableCharsets();
+                encodingName = prob[0];
+            }
+
+            if (encoding == null)
+            {
+                encoding = Encoding.GetEncoding(encodingName);
+            }
+
+            return encoding;
+        }
+    }
+
+    public class Notifier : nsICharsetDetectionObserver
+    {
+        public void Notify(String charset)
+        {
+            Util.encodingFound = true;
+            Util.encodingName = charset;
         }
     }
 }
