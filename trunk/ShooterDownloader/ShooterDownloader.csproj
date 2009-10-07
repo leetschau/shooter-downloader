@@ -16,10 +16,6 @@
     </TargetFrameworkSubset>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <ApplicationIcon>app_icon.ico</ApplicationIcon>
-    <ManifestCertificateThumbprint>B7F5D0B9A183FB05CFA402584465228EB18CEE15</ManifestCertificateThumbprint>
-    <ManifestKeyFile>ShooterSubDownloader_TemporaryKey.pfx</ManifestKeyFile>
-    <GenerateManifests>true</GenerateManifests>
-    <SignManifests>false</SignManifests>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -35,6 +31,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>strong_name_key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -105,6 +103,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="strong_name_key.snk" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -144,6 +143,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app_icon.ico" />
+    <Content Include="credit.txt" />
+    <Content Include="license.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NCharDet\NCharDet.csproj">

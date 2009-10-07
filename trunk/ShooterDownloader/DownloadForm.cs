@@ -44,9 +44,21 @@ namespace ShooterDownloader
 
             LogMan.Instance.RegisterLogger(this);
 
+            Upgrade();
+
             _settingsForm = new SettingsForm();
             LoadSettings();
             
+        }
+
+        private void Upgrade()
+        {
+            if (Properties.Settings.Default.FirstRun == true)
+            {
+                Properties.Settings.Default.Upgrade();
+                Properties.Settings.Default.FirstRun = false;
+                Properties.Settings.Default.Save();
+            }
         }
 
         #region ILogger Members
