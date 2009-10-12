@@ -46,12 +46,22 @@
 ;--------------------------------
 ; Pages
 
+; Install mode page
 !define MUI_PAGE_CUSTOMFUNCTION_PRE MultiUserPre
 !insertmacro MULTIUSER_PAGE_INSTALLMODE
+
+; Components page
 !insertmacro MUI_PAGE_COMPONENTS
+
+; Install directory page
+!define MUI_PAGE_CUSTOMFUNCTION_PRE "PRE_PAGE_DIRECTORY"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW "SHOW_PAGE_DIRECTORY"
 !insertmacro MUI_PAGE_DIRECTORY
+
+; Install files page
 !insertmacro MUI_PAGE_INSTFILES
 
+; Uninstall pages
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
@@ -248,11 +258,29 @@ FunctionEnd
 ; MULTIUSER_PAGE_INSTALLMODE Callback
 Function MultiUserPre
 
-       ClearErrors
-       ReadRegStr $R1 ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "InstallDir"
-       ${Unless} ${Errors}
-           Abort
-       ${EndUnless}
+   ClearErrors
+   ReadRegStr $0 ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "InstallDir"
+   ${Unless} ${Errors}
+	   Abort
+   ${EndUnless}
 
+FunctionEnd
+
+;-------------------------------------------------
+; MUI_PAGE_DIRECTORY Callback
+Function PrePageDirectory
+	Var /GLOBAL DISABLEDIRECTOY
+	ReadRegStr $0 ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "InstallDir"
+
+	${IF} $0 == $INSTDIR
+		StrCpy $DISABLEDIRECTOY 1
+	${ENDIF}
+FunctionEnd
+
+Function ShowPageDirectory
+	${IF} $DISABLEDIRECTOY == 1
+		EnableWindow $mui.DirectoryPage.Directory 0
+		EnableWindow $mui.DirectoryPage.BrowseButton 0
+	${ENDIF}
 FunctionEnd
 
