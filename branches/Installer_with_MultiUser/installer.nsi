@@ -81,6 +81,7 @@ LangString DESC_SecDskShortcut ${LANG_English} "Create a shortcut on the desktop
 LangString WARN_DotNetNotInstalled ${LANG_TRADCHINESE} "未安裝 .Net Framework 2.0。若未安裝 .Net Framework 2.0 本程式將無法正常運作"
 LangString WARN_DotNetNotInstalled ${LANG_ENGLISH} ".Net Framework 2.0 is not installed. This application won't work without .Net Framework 2.0."
 
+
 ; ------------------------------------------
 ; Installer Properties
 
