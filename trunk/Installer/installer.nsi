@@ -3,9 +3,9 @@
 ; User definitions
 !define PRODUCT_NAME "ShooterDownloader"
 !define PRODUCT_NAME_CHT "射手網字幕下載工具"
-!define PRODUCT_VERSION "1.0.1.2"
-!define PRODUCT_VERSION_DISPLAY "1.0"
-!define FILE_VERSION "1.0.1.2"
+!define PRODUCT_VERSION "##PROD_VER##"
+!define PRODUCT_VERSION_DISPLAY "##PROD_VER:2##"
+!define FILE_VERSION "##FILE_VER##"
 !define INSTDIR_REG_ROOT "SHELL_CONTEXT"
 !define INSTDIR_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define UNINST_EXE       "$INSTDIR\uninstall.exe"
@@ -32,8 +32,8 @@
 ;Language Selection Dialog Settings
 
 ;Remember the installer language
-!define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
-!define MUI_LANGDLL_REGISTRY_KEY "Software\${PRODUCT_NAME}" 
+!define MUI_LANGDLL_REGISTRY_ROOT "${INSTDIR_REG_ROOT}" 
+!define MUI_LANGDLL_REGISTRY_KEY "${INSTDIR_REG_KEY}" 
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
 ;--------------------------------
@@ -54,8 +54,8 @@
 !insertmacro MUI_PAGE_COMPONENTS
 
 ; Install directory page
-!define MUI_PAGE_CUSTOMFUNCTION_PRE "PRE_PAGE_DIRECTORY"
-!define MUI_PAGE_CUSTOMFUNCTION_SHOW "SHOW_PAGE_DIRECTORY"
+!define MUI_PAGE_CUSTOMFUNCTION_PRE "PrePageDirectory"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW "ShowPageDirectory"
 !insertmacro MUI_PAGE_DIRECTORY
 
 ; Install files page
@@ -72,8 +72,8 @@
 !insertmacro MUI_LANGUAGE "English"
 
 ;Language strings
-LangString InstName ${LANG_TRADCHINESE} "${PRODUCT_NAME_CHT} ${PRODUCT_VERSION_DISPLAY}"
-LangString InstName ${LANG_ENGLISH} "${PRODUCT_NAME} ${PRODUCT_VERSION_DISPLAY}"
+LangString InstName ${LANG_TRADCHINESE} "${PRODUCT_NAME_CHT}"
+LangString InstName ${LANG_ENGLISH} "${PRODUCT_NAME}"
 LangString Shortcut ${LANG_TRADCHINESE} "${PRODUCT_NAME_CHT}"
 LangString Shortcut ${LANG_ENGLISH} "${PRODUCT_NAME}"
 LangString NAME_SecMain ${LANG_TRADCHINESE} "主程式"
@@ -96,7 +96,7 @@ LangString WARN_DotNetNotInstalled ${LANG_ENGLISH} ".Net Framework 2.0 is not in
 ; Installer Properties
 
 ; The name of the installer
-Name $(InstName)
+Name "$(InstName) ${PRODUCT_VERSION_DISPLAY}"
 
 ; The file to write
 OutFile "ShooterDownloader_${FILE_VERSION}.exe"
@@ -171,9 +171,9 @@ SectionEnd
 ; Optional section (can be disabled by the user)
 Section "shortcut" SecShortcut
 
-	CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\$(Shortcut).lnk" "$INSTDIR\ShooterDownloader.exe" "" "$INSTDIR\ShooterDownloader.exe" 0
+	CreateDirectory "$SMPROGRAMS\$(InstName)"
+	CreateShortCut "$SMPROGRAMS\$(InstName)\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+	CreateShortCut "$SMPROGRAMS\$(InstName)\$(Shortcut).lnk" "$INSTDIR\ShooterDownloader.exe" "" "$INSTDIR\ShooterDownloader.exe" 0
 
 SectionEnd
 
@@ -200,7 +200,6 @@ SectionEnd
 Section "Uninstall" 
 	; Remove registry keys
 	DeleteRegKey ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}"
-	;DeleteRegKey HKLM "SOFTWARE\${PRODUCT_NAME}"
 
 	; Remove files and uninstaller
 	Delete $INSTDIR\ShooterDownloader.exe
@@ -209,11 +208,11 @@ Section "Uninstall"
 	Delete "${UNINST_EXE}"
 
 	; Remove shortcuts, if any
-	Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
+	Delete "$SMPROGRAMS\$(InstName)\*.*"
 	Delete "$DESKTOP\$(Shortcut).lnk"
 
 	; Remove directories used
-	RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
+	RMDir "$SMPROGRAMS\$(InstName)"
 	RMDir "$INSTDIR"
 SectionEnd
 
