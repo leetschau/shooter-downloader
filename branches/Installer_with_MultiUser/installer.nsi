@@ -1,8 +1,3 @@
-;--------------------------------
-; Use Modern UI
-
-!include "MUI2.nsh"
-!include "LogicLib.nsh"
 
 ;--------------------------------
 ; User definitions
@@ -11,9 +6,25 @@
 !define PRODUCT_VERSION "1.0.1.2"
 !define PRODUCT_VERSION_DISPLAY "1.0"
 !define FILE_VERSION "1.0.1.2"
+!define INSTDIR_REG_ROOT "SHELL_CONTEXT"
+!define INSTDIR_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+!define UNINST_EXE       "$INSTDIR\uninstall.exe"
 
 ;--------------------------------
-;Interface Settings
+; MultiUser Settings
+
+!define MULTIUSER_EXECUTIONLEVEL Admin
+!define MULTIUSER_INSTALLMODE_DEFAULT_CURRENTUSER
+!define MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_KEY "${INSTDIR_REG_KEY}"
+!define MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_VALUENAME "InstallDir"
+!define MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_KEY "${INSTDIR_REG_KEY}"
+!define MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_VALUENAME "InstallDir"
+!define MULTIUSER_INIT_TEXT_ADMINREQUIRED "${PRODUCT_NAME} installer requires administrator privileges. $\r$\n \
+                                           請使用管理者帳號執行${PRODUCT_NAME_CHT}安裝程式。"
+!define MULTIUSER_MUI
+
+;--------------------------------
+; MUI Settings
 
 !define MUI_ABORTWARNING
 
@@ -24,10 +35,19 @@
 !define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
 !define MUI_LANGDLL_REGISTRY_KEY "Software\${PRODUCT_NAME}" 
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
+
+;--------------------------------
+; Includes
+
+;!include "MUI2.nsh"
+!include "MultiUser.nsh"
+!include "LogicLib.nsh"
   
 ;--------------------------------
 ; Pages
 
+!define MUI_PAGE_CUSTOMFUNCTION_PRE MultiUserPre
+!insertmacro MULTIUSER_PAGE_INSTALLMODE
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -75,13 +95,13 @@ InstallDir $PROGRAMFILES\${PRODUCT_NAME}
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM "Software\${PRODUCT_NAME}" "Install_Dir"
+;InstallDirRegKey HKLM "Software\${PRODUCT_NAME}" "Install_Dir"
 
 ;Add XP manifest 
 XPStyle on
 
 ; Request application privileges for Windows Vista
-RequestExecutionLevel admin
+;RequestExecutionLevel admin
 
 VIProductVersion ${PRODUCT_VERSION}
 
@@ -121,17 +141,20 @@ Section "main" SecMain
 	File "..\ShooterDownloader\bin\Release\ShooterDownloader.exe"
 	File "..\ShooterDownloader\bin\Release\ShooterDownloader.exe.config"
 	File "..\ShooterDownloader\bin\Release\NCharDet.dll"
+	
+	WriteUninstaller "${UNINST_EXE}"
 
 	; Write the installation path into the registry
-	WriteRegStr HKLM "Software\${PRODUCT_NAME}" "Install_Dir" "$INSTDIR"
+	;WriteRegStr HKLM "Software\${PRODUCT_NAME}" "Install_Dir" "$INSTDIR"
 
 	; Write the uninstall keys for Windows
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "NoRepair" 1
-	WriteUninstaller "uninstall.exe"
-  
+	WriteRegStr ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "InstallDir" "$INSTDIR"
+    WriteRegStr ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "DisplayName" "$(InstName)"
+    WriteRegStr ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "DisplayIcon" "$INSTDIR\${PRODUCT_NAME}.exe"
+    WriteRegStr ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "UninstallString" "${UNINST_EXE}"
+	WriteRegDWORD ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "NoModify" 1
+	WriteRegDWORD ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "NoRepair" 1
+ 
 SectionEnd
 
 ; Optional section (can be disabled by the user)
@@ -165,14 +188,14 @@ SectionEnd
 
 Section "Uninstall" 
 	; Remove registry keys
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-	DeleteRegKey HKLM "SOFTWARE\${PRODUCT_NAME}"
+	DeleteRegKey ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}"
+	;DeleteRegKey HKLM "SOFTWARE\${PRODUCT_NAME}"
 
 	; Remove files and uninstaller
 	Delete $INSTDIR\ShooterDownloader.exe
 	Delete $INSTDIR\ShooterDownloader.exe.config
 	Delete $INSTDIR\NCharDet.dll
-	Delete $INSTDIR\uninstall.exe
+	Delete "${UNINST_EXE}"
 
 	; Remove shortcuts, if any
 	Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
@@ -187,6 +210,7 @@ SectionEnd
 ;Installer Functions
 
 Function .onInit
+	!insertmacro MULTIUSER_INIT
 	!insertmacro MUI_LANGDLL_DISPLAY
 
 
@@ -203,6 +227,7 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
+	!insertmacro MULTIUSER_UNINIT
 	!insertmacro MUI_UNGETLANGUAGE
 FunctionEnd
 
@@ -217,3 +242,16 @@ Function IsNetfx20Installed
 		Push 0
 	${EndIf}
 FunctionEnd
+
+;-------------------------------------------------
+; MULTIUSER_PAGE_INSTALLMODE Callback
+Function MultiUserPre
+
+       ClearErrors
+       ReadRegStr $R1 ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}" "InstallDir"
+       ${Unless} ${Errors}
+           Abort
+       ${EndUnless}
+
+FunctionEnd
+
