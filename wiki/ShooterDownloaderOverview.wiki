@@ -5,7 +5,7 @@
 
 射手網字幕下載工具的安裝程式以及程式碼可以在專案網頁下載。程式原始碼以GPLv3的方式開放。
 
-http://code.google.com/p/shooter-downloader/wiki/ShooterDownloaderOverview.attach/main_form.png
+http://shooter-downloader.googlecode.com/svn/wiki/ShooterDownloaderOverview.attach/main_form.png
 
 使用方法很簡單，只有三個步驟
 1. 選擇影片所在目錄。
@@ -16,7 +16,7 @@ http://code.google.com/p/shooter-downloader/wiki/ShooterDownloaderOverview.attac
 
 使用者可以自行設定一些程式選項，按下"設定"按鈕便可以打開設定畫面。
 
-http://code.google.com/p/shooter-downloader/wiki/ShooterDownloaderOverview.attach/settings_form.png
+http://shooter-downloader.googlecode.com/svn/wiki/ShooterDownloaderOverview.attach/settings_form.png
 
 以下是各選項的說明:
 最大同時下載數: 設定最多可同時下載幾個字幕，預設值為1，最多可同時下載3個字幕。
