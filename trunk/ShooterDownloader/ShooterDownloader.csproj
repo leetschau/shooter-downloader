@@ -81,6 +81,8 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+	<Compile Include="Properties\VersionInfo.cs" />
+	<None Include="Properties\VersionInfo.cs.tmpl" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="DownloadForm.resx">
       <DependentUpon>DownloadForm.cs</DependentUpon>
@@ -113,7 +115,6 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ShooterSubExtractor.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="Properties\VersionInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
