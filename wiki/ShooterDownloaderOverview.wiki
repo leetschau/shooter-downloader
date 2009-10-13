@@ -5,6 +5,8 @@
 
 射手網字幕下載工具的安裝程式以及程式碼可以在專案網頁下載。程式原始碼以GPLv3的方式開放。
 
+射手網字幕下載工具的程式主畫面如下:
+
 http://shooter-downloader.googlecode.com/svn/wiki/ShooterDownloaderOverview.attach/main_form.png
 
 使用方法很簡單，只有三個步驟
