@@ -113,6 +113,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ShooterSubExtractor.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Properties\VersionInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -161,6 +162,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>subwcrev $(ProjectDir) $(ProjectDir)\Properties\AssemblyInfo.cs.tmpl $(ProjectDir)\Properties\AssemblyInfo.cs</PreBuildEvent>
+    <PreBuildEvent>subwcrev $(ProjectDir) $(ProjectDir)\Properties\VersionInfo.cs.tmpl $(ProjectDir)\Properties\VersionInfo.cs</PreBuildEvent>
   </PropertyGroup>
 </Project>
