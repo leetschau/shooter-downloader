@@ -1,0 +1,3 @@
+"..\ShooterDownloader\bin\Release\ShooterDownloader.exe"
+"..\ShooterDownloader\bin\Release\ShooterDownloader.exe.config"
+"..\ShooterDownloader\bin\Release\NCharDet.dll"
