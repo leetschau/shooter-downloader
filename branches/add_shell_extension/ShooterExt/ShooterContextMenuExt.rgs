@@ -1,0 +1,23 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2} = s 'ShooterContextMenuExt Class'
+		{
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+	NoRemove txtfile
+    {
+        NoRemove ShellEx
+        {
+            NoRemove ContextMenuHandlers
+            {
+                ForceRemove SimpleShlExt = s '{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}'
+            }
+        }
+    }
+}
