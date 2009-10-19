@@ -81,8 +81,8 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-	<Compile Include="Properties\VersionInfo.cs" />
-	<None Include="Properties\VersionInfo.cs.tmpl" />
+    <Compile Include="Properties\VersionInfo.cs" />
+    <None Include="Properties\VersionInfo.cs.tmpl" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="DownloadForm.resx">
       <DependentUpon>DownloadForm.cs</DependentUpon>
@@ -145,8 +145,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app_icon.ico" />
-    <Content Include="credit.txt" />
-    <Content Include="license.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NCharDet\NCharDet.csproj">

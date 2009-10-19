@@ -18,12 +18,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace ShooterDownloader
 {
@@ -155,30 +153,100 @@ namespace ShooterDownloader
             {
                 UpdateLastDir(folderBrowserDialog.SelectedPath);
                 txtDir.Text = folderBrowserDialog.SelectedPath;
-                
 
-                //list files in the selected directory.
-                DirectoryInfo dirInfo = new DirectoryInfo(txtDir.Text);
-                FileInfo[] fileInfoList = dirInfo.GetFiles();
-                dgvFileList.Rows.Clear();
-                foreach (FileInfo fileInfo in fileInfoList)
+                PopulateFileList(txtDir.Text);
+            }
+        }
+
+        private void PopulateFileList(string dir)
+        {
+            
+            ////list files in the selected directory.
+            //DirectoryInfo dirInfo = new DirectoryInfo(dir);
+            //FileInfo[] fileInfoList = dirInfo.GetFiles();
+            //dgvFileList.Rows.Clear();
+            //foreach (FileInfo fileInfo in fileInfoList)
+            //{
+            //    bool selected = false;
+
+            //    if (_videoFileExt.Contains(fileInfo.Extension))
+            //    {
+            //        selected = true;
+            //    }
+
+            //    object[] newRow = { selected, fileInfo.Name, "", fileInfo.FullName };
+            //    int rowIdx = dgvFileList.Rows.Add(newRow);
+
+            //    if (selected)
+            //    {
+            //        //change the background color of video files
+            //        DataGridViewRow dataRow = dgvFileList.Rows[rowIdx];
+            //        dataRow.DefaultCellStyle.BackColor = Color.AntiqueWhite;
+            //    }
+            //}
+            PopulateFileList(dir, null);
+        }
+        private struct Dummy { };
+
+        private void PopulateFileList(string dir, string[] fileList)
+        {
+            //list files in the selected directory.
+            DirectoryInfo dirInfo = new DirectoryInfo(dir);
+            FileInfo[] fileInfoList = dirInfo.GetFiles();
+            dgvFileList.Rows.Clear();
+
+            Dictionary<string, Dummy> fileDic = null;
+
+            if (fileList != null)
+            {
+                fileDic = new Dictionary<string, Dummy>();
+                foreach (string file in fileList)
                 {
-                    bool selected = false;
-                    
-                    if(_videoFileExt.Contains(fileInfo.Extension))
+                    try
+                    {
+                        fileDic.Add(file, new Dummy());
+                    }
+                    catch (Exception e)
+                    {
+                        LogMan.Instance.Log(e.Message);
+                    }
+                }
+            }
+
+            foreach (FileInfo fileInfo in fileInfoList)
+            {
+                bool selected = false;
+                bool isVideo = false;
+
+                if (fileDic != null)
+                {
+                    //Select user specified files.
+                    if (fileDic.ContainsKey(fileInfo.FullName))
                     {
                         selected = true;
                     }
+                }
 
-                    object[] newRow = { selected, fileInfo.Name, "", fileInfo.FullName };
-                    int rowIdx = dgvFileList.Rows.Add(newRow);
+                if (_videoFileExt.Contains(fileInfo.Extension))
+                {
+                    isVideo = true;
 
-                    if (selected)
+                    if (fileDic == null)
                     {
-                        //change the background color of video files
-                        DataGridViewRow dataRow = dgvFileList.Rows[rowIdx];
-                        dataRow.DefaultCellStyle.BackColor = Color.AntiqueWhite;
+                        //If user didn't specify which file to select,
+                        // auto-select all video files.
+                        selected = true;
                     }
+                }
+
+                object[] newRow = { selected, fileInfo.Name, "", fileInfo.FullName };
+                int rowIdx = dgvFileList.Rows.Add(newRow);
+
+                if (isVideo)
+                {
+                    //change the background color of video files
+                    DataGridViewRow dataRow = dgvFileList.Rows[rowIdx];
+                    dataRow.DefaultCellStyle.BackColor = Color.AntiqueWhite;
                 }
             }
         }
@@ -294,5 +362,59 @@ namespace ShooterDownloader
             }
         }
 
+        private void DownloadForm_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void DownloadForm_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] paths = (string[])(e.Data.GetData(DataFormats.FileDrop));
+
+            if (paths.Length == 0)
+                return;
+
+            //If the first object is a directory.
+            if (Directory.Exists(paths[0]))
+            {
+                //Can only handle 1 directory
+                txtDir.Text = paths[0];
+                PopulateFileList(txtDir.Text);
+            }
+            else
+            {
+                string dir = null;
+                List<string> fileList = new List<string>();
+                foreach (string path in paths)
+                {
+                    if (File.Exists(path))
+                    {
+                        if (dir == null)
+                        {
+                            //Get the directory of the first file.
+                            dir = Path.GetDirectoryName(path);
+                        }
+                        else
+                        {
+                            //Ignore following files if they are not in the same directory.
+                            if (Path.GetDirectoryName(path) != dir)
+                                continue;
+                        }
+
+                        fileList.Add(path);
+                    }
+                }
+
+                txtDir.Text = dir;
+                PopulateFileList(dir, fileList.ToArray());
+            }
+        }
     }
 }

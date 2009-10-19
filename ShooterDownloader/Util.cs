@@ -17,15 +17,11 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
-using System.Resources;
-using System.Reflection;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
-using ShooterDownloader.Properties;
 using org.mozilla.intl.chardet;
 
 namespace ShooterDownloader

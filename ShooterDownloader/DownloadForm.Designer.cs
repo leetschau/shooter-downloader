@@ -204,6 +204,7 @@
             // 
             // DownloadForm
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(532, 561);
@@ -219,7 +220,9 @@
             this.Name = "DownloadForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "射手網字幕下載工具";
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.DownloadForm_DragDrop);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DownloadForm_FormClosed);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.DownloadForm_DragEnter);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFileList)).EndInit();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
