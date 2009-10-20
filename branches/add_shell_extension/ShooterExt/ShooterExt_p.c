@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Tue Oct 20 17:41:11 2009
+/* at Wed Oct 21 00:43:42 2009
  */
 /* Compiler settings for .\ShooterExt.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

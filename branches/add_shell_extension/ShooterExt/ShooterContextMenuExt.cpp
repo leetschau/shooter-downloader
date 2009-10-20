@@ -73,7 +73,7 @@ STDMETHODIMP CShooterContextMenuExt::QueryContextMenu (
     if ( uFlags & CMF_DEFAULTONLY )
         return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 0 );
 
-    InsertMenu ( hmenu, uMenuIndex, MF_BYPOSITION, uidFirstCmd, _T("Download Subtitles") );
+    InsertMenu ( hmenu, uMenuIndex, MF_BYPOSITION, uidFirstCmd, _T("下載字幕") );
 
     return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 1 );
 }
@@ -91,7 +91,7 @@ STDMETHODIMP CShooterContextMenuExt::GetCommandString (
 	// supplied buffer.
 	if ( uFlags & GCS_HELPTEXT )
 	{
-		LPCTSTR szText = _T("Download subtitles.");
+		LPCTSTR szText = _T("開啟射手網字幕下載工具");
 
 		if ( uFlags & GCS_UNICODE )
 		{
@@ -125,14 +125,6 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 			TCHAR szShooterDir[MAX_PATH];
 			TCHAR szShooterDldrPath[MAX_PATH];
 
-			//_tcscpy_s(szMsg, _T("The selected file was:\n"));
-
-			//StringList::const_iterator itor;
-			//for(itor = m_fileList.begin(); itor != m_fileList.end(); itor++)
-			//{
-			//	_tcscat_s(szMsg, _T("\n"));
-			//	_tcscat_s(szMsg, itor->c_str());
-			//}
 			HINSTANCE hModule = _AtlBaseModule.GetModuleInstance();
 			GetModuleFileName((HMODULE) hModule, szShooterDir, sizeof(szShooterDir));
 			TCHAR* pLastSlash = _tcsrchr(szShooterDir, _T('\\'));
@@ -160,9 +152,8 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 			{
 				return E_FAIL;
 			}
-			MessageBox ( pCmdInfo->hwnd, szTempFilePath, _T("ShooterDownloader"),
-				MB_ICONINFORMATION );
 
+			//Write file list to a temp file.
 			FILE* fp; 
 			errno_t ret = _tfopen_s(&fp, szTempFilePath, _T("w, ccs=UTF-8"));
 			if(ret != 0)
@@ -170,7 +161,6 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 				return E_FAIL;
 			}
 			
-			//_ftprintf_s(fp, "%s\n", 
 			StringList::const_iterator itor;
 			for(itor = m_fileList.begin(); itor != m_fileList.end(); itor++)
 			{
@@ -179,6 +169,15 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 
 			fflush(fp);
 			fclose(fp);
+
+			//Call ShooterDownloader and pass it the file list.
+			const static int PARAM_SIZE = 512;
+			TCHAR param[PARAM_SIZE];
+			_stprintf_s(param, PARAM_SIZE, _T("-list=\"%s\""), szTempFilePath);
+
+			//MessageBox ( pCmdInfo->hwnd, szShooterDldrPath, _T("ShooterDownloader"),
+			//	MB_ICONINFORMATION );
+			ShellExecute(NULL, _T("Open"), szShooterDldrPath, param, NULL, SW_SHOWNORMAL);
 
 			return S_OK;
 		}

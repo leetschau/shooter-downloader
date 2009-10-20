@@ -220,6 +220,7 @@
             this.Name = "DownloadForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "射手網字幕下載工具";
+            this.Load += new System.EventHandler(this.DownloadForm_Load);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.DownloadForm_DragDrop);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DownloadForm_FormClosed);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.DownloadForm_DragEnter);

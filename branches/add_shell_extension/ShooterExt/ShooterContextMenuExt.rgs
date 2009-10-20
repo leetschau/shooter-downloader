@@ -20,4 +20,14 @@ HKCR
             }
         }
     }
+    NoRemove Directory
+    {
+        NoRemove ShellEx
+        {
+            NoRemove ContextMenuHandlers
+            {
+                ForceRemove SimpleShlExt = s '{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}'
+            }
+        }
+    }
 }
