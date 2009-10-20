@@ -10,7 +10,7 @@ HKCR
 			}
 		}
 	}
-	NoRemove txtfile
+	NoRemove *
     {
         NoRemove ShellEx
         {

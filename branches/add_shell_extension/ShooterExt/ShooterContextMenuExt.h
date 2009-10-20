@@ -5,11 +5,9 @@
 
 #include "ShooterExt_i.h"
 
-
-#if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
-#error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
-#endif
-
+#include <string>
+#include <list>
+typedef std::list< std::basic_string<TCHAR> > StringList;
 
 
 // CShooterContextMenuExt
@@ -52,12 +50,15 @@ public:
 	STDMETHODIMP Initialize(LPCITEMIDLIST, LPDATAOBJECT, HKEY);
 
 	// IContextMenu
-	STDMETHODIMP GetCommandString(UINT, UINT, UINT*, LPSTR, UINT);
+	STDMETHODIMP GetCommandString(UINT_PTR, UINT, UINT*, LPSTR, UINT);
 	STDMETHODIMP InvokeCommand(LPCMINVOKECOMMANDINFO);
 	STDMETHODIMP QueryContextMenu(HMENU, UINT, UINT, UINT, UINT);
 
-protected:
-    TCHAR m_szFile [MAX_PATH];
+private:
+	StringList m_fileList;
+
 };
+
+const static TCHAR SHOOTER_DLDR_FILE_NAME[] = _T("ShooterDownloader.exe");
 
 OBJECT_ENTRY_AUTO(__uuidof(ShooterContextMenuExt), CShooterContextMenuExt)

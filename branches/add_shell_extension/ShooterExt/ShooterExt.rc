@@ -92,13 +92,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
-            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "CompanyName", "John Fung"
+            VALUE "FileDescription", "ShooterDownloader Shell Extension"
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
             VALUE "InternalName", "ShooterExt.dll"
+            VALUE "LegalCopyright", "(c) John Fung.  All rights reserved."
             VALUE "OriginalFilename", "ShooterExt.dll"
-            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductName", "ShooterExt"
             VALUE "ProductVersion", "1.0.0.1"
         END
     END
