@@ -26,12 +26,6 @@ using org.mozilla.intl.chardet;
 
 namespace ShooterDownloader
 {
-    enum ByteOrder
-    {
-        LittleEndian,
-        BigEndian
-    }
-
     class Util
     {
         public static string CaculateFileHash(string filePath)
@@ -135,6 +129,8 @@ namespace ShooterDownloader
             return ret;
         }
 
+
+        //For ConvertChsToCht
         private const int LOCALE_SYSTEM_DEFAULT = 0x0800;
         private const int LOCALE_TAIWAN = 1028;
         private const int LCMAP_SIMPLIFIED_CHINESE = 0x02000000;
@@ -211,8 +207,17 @@ namespace ShooterDownloader
             return ret;
         }
 
-        public static volatile bool encodingFound;
-        public static volatile string encodingName = String.Empty;
+        //For DetectEncoding
+        private static volatile bool encodingFound;
+        private static volatile string encodingName = String.Empty;
+        private class Notifier : nsICharsetDetectionObserver
+        {
+            public void Notify(String charset)
+            {
+                Util.encodingFound = true;
+                Util.encodingName = charset;
+            }
+        }
 
         public static Encoding DetectEncoding(string filePath)
         {
@@ -264,14 +269,89 @@ namespace ShooterDownloader
 
             return encoding;
         }
+
+        // P/Invoke declarations
+        private delegate int DllRegisterServer();
+        private delegate int DllUnregisterServer();
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr LoadLibraryEx(string path, IntPtr dummy, int flags);
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool FreeLibrary(IntPtr hdl);
+        [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hdl, string name);
+
+        public static bool RegisterDll(string dllPath)
+        {
+            // Register COM component, false if not a COM component
+            IntPtr module = LoadLibraryEx(dllPath, IntPtr.Zero, 0);
+            if (module == IntPtr.Zero)
+            {
+                LogMan.Instance.Log(Properties.Resources.ErrDllReg, Marshal.GetLastWin32Error());
+                return false;
+            }
+
+            try
+            {
+                IntPtr addr = GetProcAddress(module, "DllRegisterServer");
+                if (addr == IntPtr.Zero)
+                {
+                    LogMan.Instance.Log(Properties.Resources.ErrDllReg, Marshal.GetLastWin32Error());
+                    return false;
+                }
+                DllRegisterServer dlg = (DllRegisterServer)Marshal.GetDelegateForFunctionPointer(addr, typeof(DllRegisterServer));
+                int hr = dlg.Invoke();
+                if (hr != 0)
+                {
+                    Exception e = Marshal.GetExceptionForHR(hr);
+                    LogMan.Instance.Log(e.Message);
+                    return false;
+                }
+                return true;
+            }
+            finally
+            {
+                FreeLibrary(module);
+            }
+        }
+
+        public static bool UnregisterDll(string dllPath)
+        {
+            // Register COM component, false if not a COM component
+            IntPtr module = LoadLibraryEx(dllPath, IntPtr.Zero, 0);
+            if (module == IntPtr.Zero)
+            {
+                LogMan.Instance.Log(Properties.Resources.ErrDllUnreg, Marshal.GetLastWin32Error());
+                return false;
+            }
+            try
+            {
+                IntPtr addr = GetProcAddress(module, "DllUnregisterServer");
+                if (addr == IntPtr.Zero)
+                {
+                    LogMan.Instance.Log(Properties.Resources.ErrDllUnreg, Marshal.GetLastWin32Error());
+                    return false;
+                }
+                DllUnregisterServer dlg = (DllUnregisterServer)Marshal.GetDelegateForFunctionPointer(addr, typeof(DllUnregisterServer));
+                int hr = dlg.Invoke();
+                if (hr != 0)
+                {
+                    Exception e = Marshal.GetExceptionForHR(hr);
+                    LogMan.Instance.Log(e.Message);
+                    return false;
+                }
+                return true;
+            }
+            finally
+            {
+                FreeLibrary(module);
+            }
+        }
     }
 
-    public class Notifier : nsICharsetDetectionObserver
+    //For BytesToInt32
+    public enum ByteOrder
     {
-        public void Notify(String charset)
-        {
-            Util.encodingFound = true;
-            Util.encodingName = charset;
-        }
+        LittleEndian,
+        BigEndian
     }
 }

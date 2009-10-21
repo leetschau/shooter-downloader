@@ -24,5 +24,7 @@ namespace ShooterDownloader
         public const int Error = -1;
         public const int NoSubFound = -2;
         public const int MaxConcurrentJobs = 3;
+        public const string ShellExtFileName = "ShooterExt.dll";
+        public const string ShellExtClsid = "{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}";
     }
 }

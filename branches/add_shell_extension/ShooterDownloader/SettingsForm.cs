@@ -19,6 +19,7 @@ using System;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace ShooterDownloader
 {
@@ -44,6 +45,25 @@ namespace ShooterDownloader
         public bool IsDirty
         {
             get { return _formIsDirty; }
+        }
+
+        public bool IsShellExtRegistered
+        {
+            get
+            {
+                RegistryKey hkcr = Registry.ClassesRoot;
+                string subkey = String.Format("CLSID\\{0}", ShooterConst.ShellExtClsid);
+                try
+                {
+                    if (hkcr.OpenSubKey(subkey, false) == null)
+                        return false;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+                return true;
+            }
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -111,7 +131,6 @@ namespace ShooterDownloader
         {
             _formIsDirty = true;
         }
-
         
     }
 }

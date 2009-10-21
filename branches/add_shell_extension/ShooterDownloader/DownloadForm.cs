@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
-using System.Diagnostics;
 
 namespace ShooterDownloader
 {
@@ -59,19 +58,23 @@ namespace ShooterDownloader
         {
             foreach (string arg in args)
             {
-                if (arg.StartsWith("-list="))
+                if (arg.StartsWith("-tmp="))
                 {
-                    string listPath = ExtractArgValue(arg);
-                    StreamReader reader = new StreamReader(listPath);
-                    List<string> fileList = new List<string>();
-                    string line = reader.ReadLine();
-                    while (line != null)
+                    string tmpPath = ExtractArgValue(arg);
+                    if (File.Exists(tmpPath))
                     {
-                        fileList.Add(line);
-                        line = reader.ReadLine();
+                        StreamReader reader = new StreamReader(tmpPath);
+                        List<string> fileList = new List<string>();
+                        string line = reader.ReadLine();
+                        while (line != null)
+                        {
+                            fileList.Add(line);
+                            line = reader.ReadLine();
+                        }
+                        reader.Close();
+                        File.Delete(tmpPath);
+                        SelectPaths(fileList.ToArray());
                     }
-                    reader.Close();
-                    SelectPaths(fileList.ToArray());
                 }
             }
         }

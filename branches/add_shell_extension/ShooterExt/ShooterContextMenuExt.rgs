@@ -16,7 +16,7 @@ HKCR
         {
             NoRemove ContextMenuHandlers
             {
-                ForceRemove SimpleShlExt = s '{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}'
+                ForceRemove ShooterContextMenuExt = s '{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}'
             }
         }
     }
@@ -26,7 +26,7 @@ HKCR
         {
             NoRemove ContextMenuHandlers
             {
-                ForceRemove SimpleShlExt = s '{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}'
+                ForceRemove ShooterContextMenuExt = s '{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}'
             }
         }
     }

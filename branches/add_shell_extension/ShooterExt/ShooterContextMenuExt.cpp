@@ -1,10 +1,32 @@
-// ShooterContextMenuExt.cpp : Implementation of CShooterContextMenuExt
+/*
+ *   Shooter Subtitle Downloader: Automatic Subtitle Downloader for the http://shooter.cn.
+ *   Copyright (C) 2009  John Fung
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "stdafx.h"
 #include "ShooterContextMenuExt.h"
 
 
 // CShooterContextMenuExt
+
+CShooterContextMenuExt::CShooterContextMenuExt()
+{
+	m_hIcon = LoadBitmap ( _AtlBaseModule.GetModuleInstance(),
+		MAKEINTRESOURCE(IDB_SHOOTER) );
+}
 
 STDMETHODIMP CShooterContextMenuExt::Initialize ( 
   LPCITEMIDLIST pidlFolder,
@@ -45,8 +67,6 @@ STDMETHODIMP CShooterContextMenuExt::Initialize (
 	}
 
 	// Get the name of the first file and store it in our member variable m_szFile.
-	//if ( 0 == DragQueryFile ( hDrop, 0, m_szFile, MAX_PATH ) )
-	//	hr = E_INVALIDARG;
 	for(UINT uFile = 0 ; uFile < uNumFiles ; uFile++)
 	{
 		if(0 == DragQueryFile(hDrop, uFile, szFile, MAX_PATH))
@@ -73,7 +93,15 @@ STDMETHODIMP CShooterContextMenuExt::QueryContextMenu (
     if ( uFlags & CMF_DEFAULTONLY )
         return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 0 );
 
-    InsertMenu ( hmenu, uMenuIndex, MF_BYPOSITION, uidFirstCmd, _T("¤U¸ü¦r¹õ") );
+	InsertMenu ( hmenu, uMenuIndex, MF_SEPARATOR, 0, NULL );
+
+    InsertMenu ( hmenu, uMenuIndex + 1, MF_BYPOSITION, uidFirstCmd, _T("¤U¸ü¦r¹õ") );
+	// Set the bitmap.
+    if ( NULL != m_hIcon )
+        SetMenuItemBitmaps ( hmenu, uMenuIndex + 1, MF_BYPOSITION, m_hIcon, NULL );
+
+	InsertMenu ( hmenu, uMenuIndex + 2, MF_SEPARATOR, 0, NULL );
+
 
     return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 1 );
 }
@@ -125,12 +153,12 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 			TCHAR szShooterDir[MAX_PATH];
 			TCHAR szShooterDldrPath[MAX_PATH];
 
+			//Build the ShooterDownloader's file path from this module's path.
+			//Limitation: ShooterDownloader must locate in the same dir as this module.
 			HINSTANCE hModule = _AtlBaseModule.GetModuleInstance();
 			GetModuleFileName((HMODULE) hModule, szShooterDir, sizeof(szShooterDir));
 			TCHAR* pLastSlash = _tcsrchr(szShooterDir, _T('\\'));
 			*(pLastSlash + 1) = _T('\0');
-
-
 			_tcscpy_s(szShooterDldrPath, szShooterDir);
 			_tcscat_s(szShooterDldrPath, SHOOTER_DLDR_FILE_NAME);
 
@@ -166,17 +194,12 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 			{
 				_ftprintf_s(fp, _T("%s\n"), itor->c_str());
 			}
-
-			fflush(fp);
 			fclose(fp);
 
 			//Call ShooterDownloader and pass it the file list.
 			const static int PARAM_SIZE = 512;
 			TCHAR param[PARAM_SIZE];
-			_stprintf_s(param, PARAM_SIZE, _T("-list=\"%s\""), szTempFilePath);
-
-			//MessageBox ( pCmdInfo->hwnd, szShooterDldrPath, _T("ShooterDownloader"),
-			//	MB_ICONINFORMATION );
+			_stprintf_s(param, PARAM_SIZE, _T("-tmp=\"%s\""), szTempFilePath);
 			ShellExecute(NULL, _T("Open"), szShooterDldrPath, param, NULL, SW_SHOWNORMAL);
 
 			return S_OK;

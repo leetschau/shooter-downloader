@@ -30,6 +30,13 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
 //
 
 IDR_SHOOTERCONTEXTMENUEXT REGISTRY                "ShooterContextMenuExt.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SHOOTER             BITMAP                  "mini_icon.bmp"
 #endif    // Chinese (Taiwan) resources
 /////////////////////////////////////////////////////////////////////////////
 

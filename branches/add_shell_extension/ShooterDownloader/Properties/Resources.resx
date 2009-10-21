@@ -120,6 +120,12 @@
   <data name="ErrChtConvertion" xml:space="preserve">
     <value>{0} 簡轉繁失敗</value>
   </data>
+  <data name="ErrDllReg" xml:space="preserve">
+    <value>Dll 註冊失敗。錯誤碼: {0}</value>
+  </data>
+  <data name="ErrDllUnreg" xml:space="preserve">
+    <value>Dll 解除註冊失敗。錯誤碼: {0}</value>
+  </data>
   <data name="ErrHttpRequest" xml:space="preserve">
     <value>{0} HTTP 連線失敗: {1}</value>
   </data>
