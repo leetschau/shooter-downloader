@@ -123,12 +123,6 @@
   <data name="ErrDisableShellExt" xml:space="preserve">
     <value>停用右鍵選單功能失敗</value>
   </data>
-  <data name="ErrDllReg" xml:space="preserve">
-    <value>Dll 註冊失敗。錯誤碼: {0}</value>
-  </data>
-  <data name="ErrDllUnreg" xml:space="preserve">
-    <value>Dll 解除註冊失敗。錯誤碼: {0}</value>
-  </data>
   <data name="ErrEnableShellExt" xml:space="preserve">
     <value>啟用右鍵選單功能失敗</value>
   </data>
@@ -155,6 +149,12 @@
   </data>
   <data name="InfoChtConversionOk" xml:space="preserve">
     <value>{0} 簡轉繁成功</value>
+  </data>
+  <data name="InfoDisableShellExtOk" xml:space="preserve">
+    <value>停用右鍵選單功能成功</value>
+  </data>
+  <data name="InfoEnableShellExtOk" xml:space="preserve">
+    <value>啟用右鍵選單功能成功</value>
   </data>
   <data name="InfoFindSub" xml:space="preserve">
     <value>{0} 搜尋字幕</value>

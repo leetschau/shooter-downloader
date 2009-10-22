@@ -55,7 +55,7 @@ namespace ShooterDownloader
             get
             {
                 RegistryKey hkcr = Registry.ClassesRoot;
-                string subkey = String.Format("CLSID\\{0}", ShooterConst.ShellExtClsid);
+                string subkey = String.Format("CLSID\\{0}", Properties.Settings.Default.ShellExtClsid);
                 try
                 {
                     if (hkcr.OpenSubKey(subkey, false) == null)
@@ -145,19 +145,27 @@ namespace ShooterDownloader
                 shellExtPath =
                     String.Format("{0}\\{1}",
                     Application.StartupPath,
-                    ShooterConst.ShellExtFileNameX64);
+                    Properties.Settings.Default.ShellExtFileNameX64);
             }
             else
             {
                 shellExtPath =
                     String.Format("{0}\\{1}",
                     Application.StartupPath,
-                    ShooterConst.ShellExtFileName);
+                    Properties.Settings.Default.ShellExtFileName);
             }
             
             if (!IsShellExtRegistered)
             {
-                if (!Util.RegisterDll(shellExtPath))
+                if (Util.RegisterDll(shellExtPath))
+                {
+                    MessageBox.Show(
+                        Properties.Resources.InfoEnableShellExtOk,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
                 {
                     MessageBox.Show(
                         Properties.Resources.ErrEnableShellExt,
@@ -168,7 +176,15 @@ namespace ShooterDownloader
             }
             else
             {
-                if (!Util.UnregisterDll(shellExtPath))
+                if (Util.UnregisterDll(shellExtPath))
+                {
+                    MessageBox.Show(
+                        Properties.Resources.InfoDisableShellExtOk,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
                 {
                     MessageBox.Show(
                         Properties.Resources.ErrDisableShellExt,

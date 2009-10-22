@@ -286,7 +286,7 @@ namespace ShooterDownloader
 
             Process proc = Process.Start(procInfo);
             const int timeout = 5000;
-            proc.WaitForInputIdle();
+            //proc.WaitForInputIdle();
             proc.WaitForExit(timeout);
         }
 

@@ -195,7 +195,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy $(TargetPath) $(SolutionDir)bin\$(ConfigurationName)\$(TargetName)$(PlatformName)$(TargetExt) /Y"
+				CommandLine="xcopy $(TargetPath) $(SolutionDir)bin\$(ConfigurationName)\ /Y"
 			/>
 		</Configuration>
 		<Configuration
