@@ -120,11 +120,17 @@
   <data name="ErrChtConvertion" xml:space="preserve">
     <value>{0} 簡轉繁失敗</value>
   </data>
+  <data name="ErrDisableShellExt" xml:space="preserve">
+    <value>停用右鍵選單功能失敗</value>
+  </data>
   <data name="ErrDllReg" xml:space="preserve">
     <value>Dll 註冊失敗。錯誤碼: {0}</value>
   </data>
   <data name="ErrDllUnreg" xml:space="preserve">
     <value>Dll 解除註冊失敗。錯誤碼: {0}</value>
+  </data>
+  <data name="ErrEnableShellExt" xml:space="preserve">
+    <value>啟用右鍵選單功能失敗</value>
   </data>
   <data name="ErrHttpRequest" xml:space="preserve">
     <value>{0} HTTP 連線失敗: {1}</value>
@@ -176,5 +182,11 @@
   </data>
   <data name="ProgressNoSub" xml:space="preserve">
     <value>無字幕</value>
+  </data>
+  <data name="UiDisableShellExt" xml:space="preserve">
+    <value>停用右鍵選單功能</value>
+  </data>
+  <data name="UiEnableShellExt" xml:space="preserve">
+    <value>啟用右鍵選單功能</value>
   </data>
 </root>

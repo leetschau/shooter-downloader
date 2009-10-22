@@ -23,6 +23,9 @@ using System.Security.Cryptography;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using org.mozilla.intl.chardet;
+using System.Diagnostics;
+using System.Security.Principal;
+using System.Windows.Forms;
 
 namespace ShooterDownloader
 {
@@ -83,7 +86,7 @@ namespace ShooterDownloader
         {
             if (byteOrder == ByteOrder.BigEndian)
                 Array.Reverse(bytes);
-            
+
             return BitConverter.ToInt32(bytes, 0);
         }
 
@@ -98,7 +101,7 @@ namespace ShooterDownloader
                 inStream = new FileStream(inFile, FileMode.Open);
                 decompressStream = new GZipStream(inStream, CompressionMode.Decompress);
                 outStream = new FileStream(outFile, FileMode.OpenOrCreate);
-                
+
                 byte[] buffer = new byte[4096];
                 int accuRead = 0;
                 while ((accuRead = decompressStream.Read(buffer, 0, buffer.Length)) > 0)
@@ -180,7 +183,7 @@ namespace ShooterDownloader
                 {
                     ret = ConversionResult.NoConversion;
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -270,82 +273,110 @@ namespace ShooterDownloader
             return encoding;
         }
 
-        // P/Invoke declarations
-        private delegate int DllRegisterServer();
-        private delegate int DllUnregisterServer();
-        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr LoadLibraryEx(string path, IntPtr dummy, int flags);
-        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern bool FreeLibrary(IntPtr hdl);
-        [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true)]
-        private static extern IntPtr GetProcAddress(IntPtr hdl, string name);
+       
+        public static void RunProc(string filePath, string args, bool needElevation)
+        {
+            ProcessStartInfo procInfo = new ProcessStartInfo();
+            procInfo.UseShellExecute = true;
+            procInfo.FileName = filePath;
+            procInfo.Arguments = args;
+            procInfo.WorkingDirectory = Environment.CurrentDirectory;
+            if (needElevation)
+                procInfo.Verb = "runas";
+
+            Process proc = Process.Start(procInfo);
+            const int timeout = 5000;
+            proc.WaitForInputIdle();
+            proc.WaitForExit(timeout);
+        }
 
         public static bool RegisterDll(string dllPath)
         {
-            // Register COM component, false if not a COM component
-            IntPtr module = LoadLibraryEx(dllPath, IntPtr.Zero, 0);
-            if (module == IntPtr.Zero)
-            {
-                LogMan.Instance.Log(Properties.Resources.ErrDllReg, Marshal.GetLastWin32Error());
-                return false;
-            }
+
+            string regsvr32Path = String.Format("\"{0}\\regsvr32.exe\"",
+                 Environment.GetFolderPath(Environment.SpecialFolder.System));
+            string arg = String.Format("/s \"{0}\"", dllPath);
 
             try
             {
-                IntPtr addr = GetProcAddress(module, "DllRegisterServer");
-                if (addr == IntPtr.Zero)
-                {
-                    LogMan.Instance.Log(Properties.Resources.ErrDllReg, Marshal.GetLastWin32Error());
-                    return false;
-                }
-                DllRegisterServer dlg = (DllRegisterServer)Marshal.GetDelegateForFunctionPointer(addr, typeof(DllRegisterServer));
-                int hr = dlg.Invoke();
-                if (hr != 0)
-                {
-                    Exception e = Marshal.GetExceptionForHR(hr);
-                    LogMan.Instance.Log(e.Message);
-                    return false;
-                }
-                return true;
+                //Need administrative privilege to register a COM DLL.
+                RunProc(regsvr32Path, arg, !IsAdmin);
             }
-            finally
+            catch (Exception)
             {
-                FreeLibrary(module);
+                return false;
             }
+
+            return true;
         }
 
         public static bool UnregisterDll(string dllPath)
         {
-            // Register COM component, false if not a COM component
-            IntPtr module = LoadLibraryEx(dllPath, IntPtr.Zero, 0);
-            if (module == IntPtr.Zero)
-            {
-                LogMan.Instance.Log(Properties.Resources.ErrDllUnreg, Marshal.GetLastWin32Error());
-                return false;
-            }
+            string regsvr32Path = String.Format("\"{0}\\regsvr32.exe\"",
+                 Environment.GetFolderPath(Environment.SpecialFolder.System));
+            string arg = String.Format("/s /u \"{0}\"", dllPath);
+
             try
             {
-                IntPtr addr = GetProcAddress(module, "DllUnregisterServer");
-                if (addr == IntPtr.Zero)
-                {
-                    LogMan.Instance.Log(Properties.Resources.ErrDllUnreg, Marshal.GetLastWin32Error());
-                    return false;
-                }
-                DllUnregisterServer dlg = (DllUnregisterServer)Marshal.GetDelegateForFunctionPointer(addr, typeof(DllUnregisterServer));
-                int hr = dlg.Invoke();
-                if (hr != 0)
-                {
-                    Exception e = Marshal.GetExceptionForHR(hr);
-                    LogMan.Instance.Log(e.Message);
-                    return false;
-                }
-                return true;
+                //Need administrative privilege to register a COM DLL.
+                RunProc(regsvr32Path, arg, !IsAdmin);
             }
-            finally
+            catch (Exception)
             {
-                FreeLibrary(module);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsAdmin
+        {
+            get
+            {
+                WindowsIdentity id = WindowsIdentity.GetCurrent();
+                WindowsPrincipal p = new WindowsPrincipal(id);
+                return p.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
+
+        [DllImport("user32")]
+        private static extern UInt32 SendMessage(IntPtr hWnd, UInt32 msg, UInt32 wParam, UInt32 lParam);
+
+        private const int BCM_FIRST = 0x1600;
+        private const int BCM_SETSHIELD = (BCM_FIRST + 0x000C);
+
+        //Add a shield ICON to the button to inform user privilege elevation is required.
+        // Only work on Vista or above.
+        public static void AddShieldToButton(Button b)
+        {
+            b.FlatStyle = FlatStyle.System;
+            SendMessage(b.Handle, BCM_SETSHIELD, 0, 0xFFFFFFFF);
+        }
+
+/        public static bool Is64BitOS
+        {
+            get
+            {
+                if (IntPtr.Size == 8)
+                {
+                    //Application running in 64-bit mode, must be 64-bit OS.
+                    return true;
+                }
+
+                // IsWow64Process only works on Windows XP sp2 or above.
+                //  DllImport it will will result in unnecessary dependency.
+                //else
+                //{
+                //    bool retVal;
+                //    //Check if application is running in WOW64 mode. 
+                //    // If so, must be 64-bit OS.
+                //    IsWow64Process(Process.GetCurrentProcess().Handle, out retVal);
+                //    return retVal;
+                //}
+                return false;
+            }
+        }
+
     }
 
     //For BytesToInt32

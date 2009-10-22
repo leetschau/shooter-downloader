@@ -70,6 +70,15 @@ namespace ShooterDownloader.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 停用右鍵選單功能失敗.
+        /// </summary>
+        internal static string ErrDisableShellExt {
+            get {
+                return ResourceManager.GetString("ErrDisableShellExt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dll 註冊失敗。錯誤碼: {0}.
         /// </summary>
         internal static string ErrDllReg {
@@ -84,6 +93,15 @@ namespace ShooterDownloader.Properties {
         internal static string ErrDllUnreg {
             get {
                 return ResourceManager.GetString("ErrDllUnreg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 啟用右鍵選單功能失敗.
+        /// </summary>
+        internal static string ErrEnableShellExt {
+            get {
+                return ResourceManager.GetString("ErrEnableShellExt", resourceCulture);
             }
         }
         
@@ -237,6 +255,24 @@ namespace ShooterDownloader.Properties {
         internal static string ProgressNoSub {
             get {
                 return ResourceManager.GetString("ProgressNoSub", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 停用右鍵選單功能.
+        /// </summary>
+        internal static string UiDisableShellExt {
+            get {
+                return ResourceManager.GetString("UiDisableShellExt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 啟用右鍵選單功能.
+        /// </summary>
+        internal static string UiEnableShellExt {
+            get {
+                return ResourceManager.GetString("UiEnableShellExt", resourceCulture);
             }
         }
     }

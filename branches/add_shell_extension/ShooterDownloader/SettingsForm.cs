@@ -39,6 +39,9 @@ namespace ShooterDownloader
             {
                 cbConcurrenctNum.Items.Add(i);
             }
+
+            UpdateShellExtButton();
+            Util.AddShieldToButton(btnEnableShellExt);
         }
 
         //Indicate at least one of the setting
@@ -62,6 +65,7 @@ namespace ShooterDownloader
                 {
                     return false;
                 }
+                hkcr.Close();
                 return true;
             }
         }
@@ -131,6 +135,53 @@ namespace ShooterDownloader
         {
             _formIsDirty = true;
         }
+
+        private void btnEnableShellExt_Click(object sender, EventArgs e)
+        {
+
+            string shellExtPath =
+                String.Format("{0}\\{1}",
+                Application.StartupPath,
+                ShooterConst.ShellExtFileName);
+            if (!IsShellExtRegistered)
+            {
+                if (!Util.RegisterDll(shellExtPath))
+                {
+                    MessageBox.Show(
+                        Properties.Resources.ErrEnableShellExt,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                if (!Util.UnregisterDll(shellExtPath))
+                {
+                    MessageBox.Show(
+                        Properties.Resources.ErrDisableShellExt,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+
+            UpdateShellExtButton();
+        }
+
+        private void UpdateShellExtButton()
+        {
+            if (IsShellExtRegistered)
+            {
+                btnEnableShellExt.Text = Properties.Resources.UiDisableShellExt;
+            }
+            else
+            {
+                btnEnableShellExt.Text = Properties.Resources.UiEnableShellExt;
+            }
+        }
+
+        
         
     }
 }
