@@ -138,11 +138,23 @@ namespace ShooterDownloader
 
         private void btnEnableShellExt_Click(object sender, EventArgs e)
         {
+            string shellExtPath;
 
-            string shellExtPath =
-                String.Format("{0}\\{1}",
-                Application.StartupPath,
-                ShooterConst.ShellExtFileName);
+            if (Util.Is64BitOS)
+            {
+                shellExtPath =
+                    String.Format("{0}\\{1}",
+                    Application.StartupPath,
+                    ShooterConst.ShellExtFileNameX64);
+            }
+            else
+            {
+                shellExtPath =
+                    String.Format("{0}\\{1}",
+                    Application.StartupPath,
+                    ShooterConst.ShellExtFileName);
+            }
+            
             if (!IsShellExtRegistered)
             {
                 if (!Util.RegisterDll(shellExtPath))

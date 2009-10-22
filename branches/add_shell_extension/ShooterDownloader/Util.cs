@@ -353,7 +353,17 @@ namespace ShooterDownloader
             SendMessage(b.Handle, BCM_SETSHIELD, 0, 0xFFFFFFFF);
         }
 
-/        public static bool Is64BitOS
+        private delegate bool IsWow64Process(
+            [In] IntPtr hProcess,
+            [Out] out bool wow64Process);
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string path);
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool FreeLibrary(IntPtr hdl);
+        [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hdl, string name);
+
+        public static bool Is64BitOS
         {
             get
             {
@@ -362,18 +372,32 @@ namespace ShooterDownloader
                     //Application running in 64-bit mode, must be 64-bit OS.
                     return true;
                 }
+                else
+                {
+                    //Dynamicallt load kernel32 and call IsWow64Process.
+                    IntPtr module = LoadLibrary("Kernel32.dll");
+                    if (module == IntPtr.Zero)
+                    {
+                        return false;
+                    }
 
-                // IsWow64Process only works on Windows XP sp2 or above.
-                //  DllImport it will will result in unnecessary dependency.
-                //else
-                //{
-                //    bool retVal;
-                //    //Check if application is running in WOW64 mode. 
-                //    // If so, must be 64-bit OS.
-                //    IsWow64Process(Process.GetCurrentProcess().Handle, out retVal);
-                //    return retVal;
-                //}
-                return false;
+                    IntPtr addr = GetProcAddress(module, "IsWow64Process");
+                    if (addr == IntPtr.Zero)
+                    {
+                        return false;
+                    }
+
+                    //Check if application is running in WOW64 mode.
+                    // IsWow64Process only works on Windows XP sp2 or above.
+                    //  Dynamically invoke it to avoid unnecessary dependency.
+                    IsWow64Process dlg = (IsWow64Process)Marshal.GetDelegateForFunctionPointer(addr, typeof(IsWow64Process));
+                    bool retval;
+                    dlg.Invoke(Process.GetCurrentProcess().Handle, out retval);
+
+                    return retval;
+                }
+                
+                
             }
         }
 
