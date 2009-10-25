@@ -1,4 +1,4 @@
-﻿/*
+/*
  *   Shooter Subtitle Downloader: Automatic Subtitle Downloader for the http://shooter.cn.
  *   Copyright (C) 2009  John Fung
  *
@@ -16,22 +16,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using System;
-using System.Windows.Forms;
+#include "stdafx.h"
+#include "resource.h"
+#include "ShooterExt_i.h"
+#include "dllmain.h"
 
-namespace ShooterDownloader
+CShooterExtModule _AtlModule;
+
+// DLL Entry Point
+extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
-    static class Program
-    {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DownloadForm());
-        }
-    }
+	hInstance;
+	return _AtlModule.DllMain(dwReason, lpReserved); 
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *   Shooter Subtitle Downloader: Automatic Subtitle Downloader for the http://shooter.cn.
  *   Copyright (C) 2009  John Fung
  *
@@ -16,22 +16,28 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using System;
-using System.Windows.Forms;
+// stdafx.h : include file for standard system include files,
+// or project specific include files that are used frequently,
+// but are changed infrequently
 
-namespace ShooterDownloader
-{
-    static class Program
-    {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DownloadForm());
-        }
-    }
-}
+#pragma once
+
+#ifndef STRICT
+#define STRICT
+#endif
+
+#include "targetver.h"
+
+#define _ATL_APARTMENT_THREADED
+#define _ATL_NO_AUTOMATIC_NAMESPACE
+
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
+
+#include "resource.h"
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
+
+#include <shlobj.h>
+
+using namespace ATL;

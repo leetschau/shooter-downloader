@@ -1,3 +1,5 @@
-"..\ShooterDownloader\bin\Release\ShooterDownloader.exe"
-"..\ShooterDownloader\bin\Release\ShooterDownloader.exe.config"
-"..\ShooterDownloader\bin\Release\NCharDet.dll"
+"..\bin\Release\ShooterDownloader.exe"
+"..\bin\Release\ShooterDownloader.exe.config"
+"..\bin\Release\NCharDet.dll"
+"..\bin\Release\ShooterExt.dll"
+"..\bin\Release\ShooterExt_x64.dll"

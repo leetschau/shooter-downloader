@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
-using System.Diagnostics;
 
 namespace ShooterDownloader
 {
@@ -47,6 +46,50 @@ namespace ShooterDownloader
             _settingsForm = new SettingsForm();
             LoadSettings();
             
+        }
+
+        private void DownloadForm_Load(object sender, EventArgs e)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            ParseArgs(args);
+        }
+
+        private void ParseArgs(string[] args)
+        {
+            foreach (string arg in args)
+            {
+                if (arg.StartsWith("-tmp="))
+                {
+                    string tmpPath = ExtractArgValue(arg);
+                    if (File.Exists(tmpPath))
+                    {
+                        StreamReader reader = new StreamReader(tmpPath);
+                        List<string> fileList = new List<string>();
+                        string line = reader.ReadLine();
+                        while (line != null)
+                        {
+                            fileList.Add(line);
+                            line = reader.ReadLine();
+                        }
+                        reader.Close();
+                        File.Delete(tmpPath);
+                        SelectPaths(fileList.ToArray());
+                    }
+                }
+            }
+        }
+
+        private string ExtractArgValue(string arg)
+        {
+            int idx = arg.IndexOf('=');
+            if ((idx + 1) < arg.Length)
+            {
+                return arg.Substring(idx + 1);
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         private void Upgrade()
@@ -160,30 +203,6 @@ namespace ShooterDownloader
 
         private void PopulateFileList(string dir)
         {
-            
-            ////list files in the selected directory.
-            //DirectoryInfo dirInfo = new DirectoryInfo(dir);
-            //FileInfo[] fileInfoList = dirInfo.GetFiles();
-            //dgvFileList.Rows.Clear();
-            //foreach (FileInfo fileInfo in fileInfoList)
-            //{
-            //    bool selected = false;
-
-            //    if (_videoFileExt.Contains(fileInfo.Extension))
-            //    {
-            //        selected = true;
-            //    }
-
-            //    object[] newRow = { selected, fileInfo.Name, "", fileInfo.FullName };
-            //    int rowIdx = dgvFileList.Rows.Add(newRow);
-
-            //    if (selected)
-            //    {
-            //        //change the background color of video files
-            //        DataGridViewRow dataRow = dgvFileList.Rows[rowIdx];
-            //        dataRow.DefaultCellStyle.BackColor = Color.AntiqueWhite;
-            //    }
-            //}
             PopulateFileList(dir, null);
         }
         private struct Dummy { };
@@ -381,6 +400,11 @@ namespace ShooterDownloader
             if (paths.Length == 0)
                 return;
 
+            SelectPaths(paths);
+        }
+
+        void SelectPaths(string[] paths)
+        {
             //If the first object is a directory.
             if (Directory.Exists(paths[0]))
             {
@@ -416,5 +440,7 @@ namespace ShooterDownloader
                 PopulateFileList(dir, fileList.ToArray());
             }
         }
+
+        
     }
 }

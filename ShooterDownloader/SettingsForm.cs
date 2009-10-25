@@ -19,6 +19,7 @@ using System;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace ShooterDownloader
 {
@@ -38,12 +39,35 @@ namespace ShooterDownloader
             {
                 cbConcurrenctNum.Items.Add(i);
             }
+
+            UpdateShellExtButton();
+            Util.AddShieldToButton(btnEnableShellExt);
         }
 
         //Indicate at least one of the setting
         public bool IsDirty
         {
             get { return _formIsDirty; }
+        }
+
+        public bool IsShellExtRegistered
+        {
+            get
+            {
+                RegistryKey hkcr = Registry.ClassesRoot;
+                string subkey = String.Format("CLSID\\{0}", Properties.Settings.Default.ShellExtClsid);
+                try
+                {
+                    if (hkcr.OpenSubKey(subkey, false) == null)
+                        return false;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+                hkcr.Close();
+                return true;
+            }
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -112,6 +136,80 @@ namespace ShooterDownloader
             _formIsDirty = true;
         }
 
+        private void btnEnableShellExt_Click(object sender, EventArgs e)
+        {
+            string shellExtPath;
+
+            if (Util.Is64BitOS)
+            {
+                shellExtPath =
+                    String.Format("{0}\\{1}",
+                    Application.StartupPath,
+                    Properties.Settings.Default.ShellExtFileNameX64);
+            }
+            else
+            {
+                shellExtPath =
+                    String.Format("{0}\\{1}",
+                    Application.StartupPath,
+                    Properties.Settings.Default.ShellExtFileName);
+            }
+            
+            if (!IsShellExtRegistered)
+            {
+                if (Util.RegisterDll(shellExtPath))
+                {
+                    MessageBox.Show(
+                        Properties.Resources.InfoEnableShellExtOk,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        Properties.Resources.ErrEnableShellExt,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                if (Util.UnregisterDll(shellExtPath))
+                {
+                    MessageBox.Show(
+                        Properties.Resources.InfoDisableShellExtOk,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        Properties.Resources.ErrDisableShellExt,
+                        Properties.Resources.InfoTitle,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+
+            UpdateShellExtButton();
+        }
+
+        private void UpdateShellExtButton()
+        {
+            if (IsShellExtRegistered)
+            {
+                btnEnableShellExt.Text = Properties.Resources.UiDisableShellExt;
+            }
+            else
+            {
+                btnEnableShellExt.Text = Properties.Resources.UiEnableShellExt;
+            }
+        }
+
+        
         
     }
 }

@@ -23,15 +23,12 @@ using System.Security.Cryptography;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using org.mozilla.intl.chardet;
+using System.Diagnostics;
+using System.Security.Principal;
+using System.Windows.Forms;
 
 namespace ShooterDownloader
 {
-    enum ByteOrder
-    {
-        LittleEndian,
-        BigEndian
-    }
-
     class Util
     {
         public static string CaculateFileHash(string filePath)
@@ -89,7 +86,7 @@ namespace ShooterDownloader
         {
             if (byteOrder == ByteOrder.BigEndian)
                 Array.Reverse(bytes);
-            
+
             return BitConverter.ToInt32(bytes, 0);
         }
 
@@ -104,7 +101,7 @@ namespace ShooterDownloader
                 inStream = new FileStream(inFile, FileMode.Open);
                 decompressStream = new GZipStream(inStream, CompressionMode.Decompress);
                 outStream = new FileStream(outFile, FileMode.OpenOrCreate);
-                
+
                 byte[] buffer = new byte[4096];
                 int accuRead = 0;
                 while ((accuRead = decompressStream.Read(buffer, 0, buffer.Length)) > 0)
@@ -135,6 +132,8 @@ namespace ShooterDownloader
             return ret;
         }
 
+
+        //For ConvertChsToCht
         private const int LOCALE_SYSTEM_DEFAULT = 0x0800;
         private const int LOCALE_TAIWAN = 1028;
         private const int LCMAP_SIMPLIFIED_CHINESE = 0x02000000;
@@ -184,7 +183,7 @@ namespace ShooterDownloader
                 {
                     ret = ConversionResult.NoConversion;
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -211,8 +210,17 @@ namespace ShooterDownloader
             return ret;
         }
 
-        public static volatile bool encodingFound;
-        public static volatile string encodingName = String.Empty;
+        //For DetectEncoding
+        private static volatile bool encodingFound;
+        private static volatile string encodingName = String.Empty;
+        private class Notifier : nsICharsetDetectionObserver
+        {
+            public void Notify(String charset)
+            {
+                Util.encodingFound = true;
+                Util.encodingName = charset;
+            }
+        }
 
         public static Encoding DetectEncoding(string filePath)
         {
@@ -264,14 +272,141 @@ namespace ShooterDownloader
 
             return encoding;
         }
+
+       
+        public static void RunProc(string filePath, string args, bool needElevation)
+        {
+            ProcessStartInfo procInfo = new ProcessStartInfo();
+            procInfo.UseShellExecute = true;
+            procInfo.FileName = filePath;
+            procInfo.Arguments = args;
+            procInfo.WorkingDirectory = Environment.CurrentDirectory;
+            if (needElevation)
+                procInfo.Verb = "runas";
+
+            Process proc = Process.Start(procInfo);
+            const int timeout = 5000;
+            //proc.WaitForInputIdle();
+            proc.WaitForExit(timeout);
+        }
+
+        public static bool RegisterDll(string dllPath)
+        {
+
+            string regsvr32Path = String.Format("\"{0}\\regsvr32.exe\"",
+                 Environment.GetFolderPath(Environment.SpecialFolder.System));
+            string arg = String.Format("/s \"{0}\"", dllPath);
+
+            try
+            {
+                //Need administrative privilege to register a COM DLL.
+                RunProc(regsvr32Path, arg, !IsAdmin);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool UnregisterDll(string dllPath)
+        {
+            string regsvr32Path = String.Format("\"{0}\\regsvr32.exe\"",
+                 Environment.GetFolderPath(Environment.SpecialFolder.System));
+            string arg = String.Format("/s /u \"{0}\"", dllPath);
+
+            try
+            {
+                //Need administrative privilege to register a COM DLL.
+                RunProc(regsvr32Path, arg, !IsAdmin);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsAdmin
+        {
+            get
+            {
+                WindowsIdentity id = WindowsIdentity.GetCurrent();
+                WindowsPrincipal p = new WindowsPrincipal(id);
+                return p.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
+
+        [DllImport("user32")]
+        private static extern UInt32 SendMessage(IntPtr hWnd, UInt32 msg, UInt32 wParam, UInt32 lParam);
+
+        private const int BCM_FIRST = 0x1600;
+        private const int BCM_SETSHIELD = (BCM_FIRST + 0x000C);
+
+        //Add a shield ICON to the button to inform user privilege elevation is required.
+        // Only work on Vista or above.
+        public static void AddShieldToButton(Button b)
+        {
+            b.FlatStyle = FlatStyle.System;
+            SendMessage(b.Handle, BCM_SETSHIELD, 0, 0xFFFFFFFF);
+        }
+
+        private delegate bool IsWow64Process(
+            [In] IntPtr hProcess,
+            [Out] out bool wow64Process);
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string path);
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool FreeLibrary(IntPtr hdl);
+        [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hdl, string name);
+
+        public static bool Is64BitOS
+        {
+            get
+            {
+                if (IntPtr.Size == 8)
+                {
+                    //Application running in 64-bit mode, must be 64-bit OS.
+                    return true;
+                }
+                else
+                {
+                    //Dynamicallt load kernel32 and call IsWow64Process.
+                    IntPtr module = LoadLibrary("Kernel32.dll");
+                    if (module == IntPtr.Zero)
+                    {
+                        return false;
+                    }
+
+                    IntPtr addr = GetProcAddress(module, "IsWow64Process");
+                    if (addr == IntPtr.Zero)
+                    {
+                        return false;
+                    }
+
+                    //Check if application is running in WOW64 mode.
+                    // IsWow64Process only works on Windows XP sp2 or above.
+                    //  Dynamically invoke it to avoid unnecessary dependency.
+                    IsWow64Process dlg = (IsWow64Process)Marshal.GetDelegateForFunctionPointer(addr, typeof(IsWow64Process));
+                    bool retval;
+                    dlg.Invoke(Process.GetCurrentProcess().Handle, out retval);
+
+                    return retval;
+                }
+                
+                
+            }
+        }
+
     }
 
-    public class Notifier : nsICharsetDetectionObserver
+    //For BytesToInt32
+    public enum ByteOrder
     {
-        public void Notify(String charset)
-        {
-            Util.encodingFound = true;
-            Util.encodingName = charset;
-        }
+        LittleEndian,
+        BigEndian
     }
 }

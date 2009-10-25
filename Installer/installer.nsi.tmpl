@@ -29,7 +29,7 @@
 !define MUI_ABORTWARNING
 
 ;--------------------------------
-;Language Selection Dialog Settings
+; Language Selection Dialog Settings
 
 ;Remember the installer language
 !define MUI_LANGDLL_REGISTRY_ROOT "${INSTDIR_REG_ROOT}" 
@@ -37,11 +37,21 @@
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
 ;--------------------------------
+; Macros
+!macro Overwrite Source Destination
+	SetFileAttributes "${Destination}" NORMAL
+	File "/oname=${Destination}.new" "${Source}"
+	Delete /rebootok "${Destination}"
+	Rename /rebootok "${Destination}.new" "${Destination}"
+!macroend
+!define Overwrite "!insertmacro Overwrite"
+
+;--------------------------------
 ; Includes
 
-;!include "MUI2.nsh"
 !include "MultiUser.nsh"
 !include "LogicLib.nsh"
+!include "x64.nsh"
   
 ;--------------------------------
 ; Pages
@@ -61,9 +71,14 @@
 ; Install files page
 !insertmacro MUI_PAGE_INSTFILES
 
+; Finish
+!insertmacro MUI_PAGE_FINISH
+
+
 ; Uninstall pages
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
 ;--------------------------------
 ;Languages
@@ -80,14 +95,18 @@ LangString NAME_SecMain ${LANG_TRADCHINESE} "主程式"
 LangString NAME_SecMain ${LANG_ENGLISH} "Main Application"
 LangString NAME_SecShortcut ${LANG_TRADCHINESE} "開始功能表捷徑"
 LangString NAME_SecShortcut ${LANG_ENGLISH} "Start Menu Shortcuts"
-LangString NAME_SecDskShortcut ${LANG_TRADCHINESE} "建立桌面捷徑。"
+LangString NAME_SecDskShortcut ${LANG_TRADCHINESE} "建立桌面捷徑"
 LangString NAME_SecDskShortcut ${LANG_English} "Desktop Shortcut"
+LangString NAME_SecShellExt ${LANG_TRADCHINESE} "啟用右鍵選單功能"
+LangString NAME_SecShellExt ${LANG_English} "Add Context Menu Entry"
 LangString DESC_SecMain ${LANG_TRADCHINESE} "安裝主要程式檔案。"
 LangString DESC_SecMain ${LANG_ENGLISH} "Main application files."
 LangString DESC_SecShortcut ${LANG_TRADCHINESE} "在開始功能表中建立捷徑。"
 LangString DESC_SecShortcut ${LANG_ENGLISH} "Create shortcuts in Start menu."
 LangString DESC_SecDskShortcut ${LANG_TRADCHINESE} "在桌面建立捷徑。"
 LangString DESC_SecDskShortcut ${LANG_English} "Create a shortcut on the desktop."
+LangString DESC_SecShellExt ${LANG_TRADCHINESE} "加入下載字幕的選項讓使用者可以直接用右鍵選單開啟字幕下載工具。"
+LangString DESC_SecShellExt ${LANG_English} "Add a menu entry to allow launching ShooterDownloader directly from the context menu."
 LangString WARN_DotNetNotInstalled ${LANG_TRADCHINESE} "未安裝 .Net Framework 2.0。若未安裝 .Net Framework 2.0 本程式將無法正常運作"
 LangString WARN_DotNetNotInstalled ${LANG_ENGLISH} ".Net Framework 2.0 is not installed. This application won't work without .Net Framework 2.0."
 
@@ -149,9 +168,11 @@ Section "main" SecMain
 	SetOutPath $INSTDIR
 
 	; Put file there
-	File "..\ShooterDownloader\bin\Release\ShooterDownloader.exe"
-	File "..\ShooterDownloader\bin\Release\ShooterDownloader.exe.config"
-	File "..\ShooterDownloader\bin\Release\NCharDet.dll"
+	${Overwrite} "..\bin\Release\ShooterDownloader.exe" "$INSTDIR\ShooterDownloader.exe"
+	${Overwrite} "..\bin\Release\ShooterDownloader.exe.config" "$INSTDIR\ShooterDownloader.exe.config"
+	${Overwrite} "..\bin\Release\NCharDet.dll" "$INSTDIR\NCharDet.dll"
+	${Overwrite} "..\bin\Release\ShooterExt.dll" "$INSTDIR\ShooterExt.dll" 
+	${Overwrite} "..\bin\Release\ShooterExt_x64.dll" "$INSTDIR\ShooterExt_x64.dll" 
 	
 	WriteUninstaller "${UNINST_EXE}"
 
@@ -181,6 +202,16 @@ Section "dskShortcut" SecDskShortcut
 	CreateShortCut "$DESKTOP\$(Shortcut).lnk" "$INSTDIR\ShooterDownloader.exe" "" "$INSTDIR\ShooterDownloader.exe" 0
 SectionEnd
 
+Section "shellext" SecShellExt
+	${If} ${RunningX64} 
+		ExecWait '"$SYSDIR\regsvr32.exe" /s "$INSTDIR\ShooterExt_x64.dll"'
+		;RegDll doesn't work. Don't know why.
+		;RegDLL "$INSTDIR\ShooterExt_x64.dll"
+	${else}
+		ExecWait '"$SYSDIR\regsvr32.exe" /s "$INSTDIR\ShooterExt.dll"'
+	${EndIf}
+SectionEnd
+
 
 ;--------------------------------
 ;Descriptions
@@ -190,6 +221,7 @@ SectionEnd
 !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} $(DESC_SecMain)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecShortcut} $(DESC_SecShortcut)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecDskShortcut} $(DESC_SecDskShortcut)
+!insertmacro MUI_DESCRIPTION_TEXT ${SecShellExt} $(DESC_SecShellExt)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
@@ -198,13 +230,23 @@ SectionEnd
 ; Uninstaller
 
 Section "Uninstall" 
+	; Unregister shell extension
+	${If} ${RunningX64} 
+		ExecWait '"$SYSDIR\regsvr32.exe" /s /u "$INSTDIR\ShooterExt_x64.dll"'
+	${else}
+		ExecWait '"$SYSDIR\regsvr32.exe" /s /u "$INSTDIR\ShooterExt.dll"'
+	${EndIf}
+	
 	; Remove registry keys
 	DeleteRegKey ${INSTDIR_REG_ROOT} "${INSTDIR_REG_KEY}"
 
 	; Remove files and uninstaller
-	Delete $INSTDIR\ShooterDownloader.exe
-	Delete $INSTDIR\ShooterDownloader.exe.config
-	Delete $INSTDIR\NCharDet.dll
+	Delete /rebootok "$INSTDIR\ShooterDownloader.exe"
+	Delete /rebootok "$INSTDIR\ShooterDownloader.exe.config"
+	Delete /rebootok "$INSTDIR\NCharDet.dll"
+	Delete /rebootok "$INSTDIR\ShooterExt_x64.dll"
+	Delete /rebootok "$INSTDIR\ShooterExt.dll"
+	
 	Delete "${UNINST_EXE}"
 
 	; Remove shortcuts, if any
@@ -213,7 +255,7 @@ Section "Uninstall"
 
 	; Remove directories used
 	RMDir "$SMPROGRAMS\$(InstName)"
-	RMDir "$INSTDIR"
+	RMDir /rebootok "$INSTDIR"
 SectionEnd
 
 ;--------------------------------
@@ -227,6 +269,7 @@ Function .onInit
 	SectionSetText ${SecMain} $(NAME_SecMain)
 	SectionSetText ${SecShortcut} $(NAME_SecShortcut)
 	SectionSetText ${SecDskShortcut} $(NAME_SecDskShortcut)
+	SectionSetText ${SecShellExt} $(NAME_SecShellExt)
 	
 	Call IsNetfx20Installed
 	Pop $R0
