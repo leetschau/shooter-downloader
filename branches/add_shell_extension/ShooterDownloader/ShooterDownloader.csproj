@@ -193,7 +193,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>subwcrev $(ProjectDir) $(ProjectDir)\Properties\VersionInfo.cs.tmpl $(ProjectDir)\Properties\VersionInfo.cs</PreBuildEvent>
+    <PreBuildEvent>subwcrev $(SolutionDir) $(ProjectDir)\Properties\VersionInfo.cs.tmpl $(ProjectDir)\Properties\VersionInfo.cs</PreBuildEvent>
     <PostBuildEvent>xcopy $(TargetPath) $(SolutionDir)bin\$(ConfigurationName)\ /Y
 xcopy $(TargetPath).config $(SolutionDir)bin\$(ConfigurationName)\ /Y</PostBuildEvent>
   </PropertyGroup>

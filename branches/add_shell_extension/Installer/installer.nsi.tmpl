@@ -29,13 +29,15 @@
 !define MUI_ABORTWARNING
 
 ;--------------------------------
-;Language Selection Dialog Settings
+; Language Selection Dialog Settings
 
 ;Remember the installer language
 !define MUI_LANGDLL_REGISTRY_ROOT "${INSTDIR_REG_ROOT}" 
 !define MUI_LANGDLL_REGISTRY_KEY "${INSTDIR_REG_KEY}" 
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
+;--------------------------------
+; Macros
 !macro Overwrite Source Destination
 	SetFileAttributes "${Destination}" NORMAL
 	File "/oname=${Destination}.new" "${Source}"
