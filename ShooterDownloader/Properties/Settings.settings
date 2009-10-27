@@ -39,7 +39,7 @@
       <Value Profile="(Default)">ShooterExt.dll</Value>
     </Setting>
     <Setting Name="ShellExtFileNameX64" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">ShooterExt_x64.dl</Value>
+      <Value Profile="(Default)">ShooterExt_x64.dll</Value>
     </Setting>
     <Setting Name="ShellExtClsid" Type="System.String" Scope="Application">
       <Value Profile="(Default)">{5258ACEF-6A10-4CDC-B5A5-B4B0D7EF23B2}</Value>

@@ -151,7 +151,7 @@ namespace ShooterDownloader.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ShooterExt_x64.dl")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ShooterExt_x64.dll")]
         public string ShellExtFileNameX64 {
             get {
                 return ((string)(this["ShellExtFileNameX64"]));
