@@ -41,7 +41,7 @@ namespace ShooterDownloader
             }
 
             UpdateShellExtButton();
-            Util.AddShieldToButton(btnEnableShellExt);
+            
         }
 
         //Indicate at least one of the setting
@@ -103,6 +103,8 @@ namespace ShooterDownloader
             chkEnableConvert.Checked = Properties.Settings.Default.AutoChsToChtConversion;
 
             _formIsDirty = false;
+
+            Util.AddShieldToButton(btnEnableShellExt);
         }
 
         private void btnOpenLogFolder_Click(object sender, EventArgs e)
