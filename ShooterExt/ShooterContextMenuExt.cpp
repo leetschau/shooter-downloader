@@ -93,14 +93,14 @@ STDMETHODIMP CShooterContextMenuExt::QueryContextMenu (
     if ( uFlags & CMF_DEFAULTONLY )
         return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 0 );
 
-	InsertMenu ( hmenu, uMenuIndex, MF_SEPARATOR, 0, NULL );
+	InsertMenu ( hmenu, uMenuIndex, MF_SEPARATOR|MF_BYPOSITION, 0, NULL );
 
     InsertMenu ( hmenu, uMenuIndex + 1, MF_BYPOSITION, uidFirstCmd, _T("¤U¸ü¦r¹õ") );
 	// Set the bitmap.
     if ( NULL != m_hIcon )
         SetMenuItemBitmaps ( hmenu, uMenuIndex + 1, MF_BYPOSITION, m_hIcon, NULL );
 
-	InsertMenu ( hmenu, uMenuIndex + 2, MF_SEPARATOR, 0, NULL );
+	InsertMenu ( hmenu, uMenuIndex + 2, MF_SEPARATOR|MF_BYPOSITION, 0, NULL );
 
 
     return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 1 );
