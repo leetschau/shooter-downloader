@@ -50,45 +50,9 @@ namespace ShooterDownloader
 
         private void DownloadForm_Load(object sender, EventArgs e)
         {
-            string[] args = Environment.GetCommandLineArgs();
-            ParseArgs(args);
-        }
-
-        private void ParseArgs(string[] args)
-        {
-            foreach (string arg in args)
+            if (ArgMan.Instance.Files != null)
             {
-                if (arg.StartsWith("-tmp="))
-                {
-                    string tmpPath = ExtractArgValue(arg);
-                    if (File.Exists(tmpPath))
-                    {
-                        StreamReader reader = new StreamReader(tmpPath);
-                        List<string> fileList = new List<string>();
-                        string line = reader.ReadLine();
-                        while (line != null)
-                        {
-                            fileList.Add(line);
-                            line = reader.ReadLine();
-                        }
-                        reader.Close();
-                        File.Delete(tmpPath);
-                        SelectPaths(fileList.ToArray());
-                    }
-                }
-            }
-        }
-
-        private string ExtractArgValue(string arg)
-        {
-            int idx = arg.IndexOf('=');
-            if ((idx + 1) < arg.Length)
-            {
-                return arg.Substring(idx + 1);
-            }
-            else
-            {
-                return String.Empty;
+                SelectPaths(ArgMan.Instance.Files);
             }
         }
 
@@ -299,7 +263,7 @@ namespace ShooterDownloader
                     {
                         //disable input if there is at least one checked column.
                         DisableInput();
-                        ClearDownloadDtatus();
+                        ClearDownloadStatus();
                         shouldDisableInput = false;
                     }
                     string filePath = (string)row.Cells["FullPathColumn"].Value;
@@ -361,6 +325,11 @@ namespace ShooterDownloader
             btnSelectAll.Enabled = true;
             btnSelectNone.Enabled = true;
             btnStartBatch.Enabled = true;
+            this.Cursor = Cursors.Default;
+            foreach (Control ctrl in this.Controls)
+            {
+                ctrl.Cursor = Cursors.Default;
+            }
         }
 
         private void DisableInput()
@@ -371,9 +340,14 @@ namespace ShooterDownloader
             btnSelectAll.Enabled = false;
             btnSelectNone.Enabled = false;
             btnStartBatch.Enabled = false;
+            this.Cursor = Cursors.WaitCursor;
+            foreach (Control ctrl in this.Controls)
+            {
+                ctrl.Cursor = Cursors.WaitCursor;
+            }
         }
 
-        private void ClearDownloadDtatus()
+        private void ClearDownloadStatus()
         {
             foreach (DataGridViewRow row in dgvFileList.Rows)
             {

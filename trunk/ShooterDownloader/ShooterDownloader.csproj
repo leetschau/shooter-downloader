@@ -94,6 +94,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArgMan.cs" />
     <Compile Include="DownloadForm.cs">
       <SubType>Form</SubType>
     </Compile>
