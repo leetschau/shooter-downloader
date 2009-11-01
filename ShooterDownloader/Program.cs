@@ -27,11 +27,19 @@ namespace ShooterDownloader
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            ArgMan.Instance.ParseArgs(args);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DownloadForm());
+            if (ArgMan.Instance.CodeConversionOnly)
+            {
+                MessageBox.Show("Code Conversion!!");
+            }
+            else
+            {
+                Application.Run(new DownloadForm());
+            }
         }
     }
 }
