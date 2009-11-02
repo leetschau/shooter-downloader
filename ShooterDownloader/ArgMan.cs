@@ -75,9 +75,6 @@ namespace ShooterDownloader
                             line = reader.ReadLine();
                         }
                         reader.Close();
-                        //File.Delete(tmpPath);
-                        //SelectPaths(fileList.ToArray());
-                        //_files = fileList.ToArray();
                     }
                 }
                 else if (arg == "/c")
