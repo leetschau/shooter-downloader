@@ -26,6 +26,7 @@ CShooterContextMenuExt::CShooterContextMenuExt()
 {
 	m_hIcon = LoadBitmap ( _AtlBaseModule.GetModuleInstance(),
 		MAKEINTRESOURCE(IDB_SHOOTER) );
+	m_bHasDir = false;
 }
 
 STDMETHODIMP CShooterContextMenuExt::Initialize ( 
@@ -67,6 +68,8 @@ STDMETHODIMP CShooterContextMenuExt::Initialize (
 	}
 
 	// Get the name of the first file and store it in our member variable m_szFile.
+	m_bHasDir = false;
+
 	for(UINT uFile = 0 ; uFile < uNumFiles ; uFile++)
 	{
 		if(0 == DragQueryFile(hDrop, uFile, szFile, MAX_PATH))
@@ -76,6 +79,8 @@ STDMETHODIMP CShooterContextMenuExt::Initialize (
 
 		m_fileList.push_back(szFile);
 
+		if(IsDir(szFile))
+			m_bHasDir = true;
 	}
 
 
@@ -95,15 +100,28 @@ STDMETHODIMP CShooterContextMenuExt::QueryContextMenu (
 
 	InsertMenu ( hmenu, uMenuIndex, MF_SEPARATOR|MF_BYPOSITION, 0, NULL );
 
-    InsertMenu ( hmenu, uMenuIndex + 1, MF_BYPOSITION, uidFirstCmd, _T("¤U¸ü¦r¹õ") );
+	UINT uidCmd = uidFirstCmd;
+	uMenuIndex++;
+    InsertMenu ( hmenu, uMenuIndex, MF_BYPOSITION, uidCmd, _T("¤U¸ü¦r¹õ") );
 	// Set the bitmap.
     if ( NULL != m_hIcon )
-        SetMenuItemBitmaps ( hmenu, uMenuIndex + 1, MF_BYPOSITION, m_hIcon, NULL );
+        SetMenuItemBitmaps ( hmenu, uMenuIndex, MF_BYPOSITION, m_hIcon, NULL );
 
-	InsertMenu ( hmenu, uMenuIndex + 2, MF_SEPARATOR|MF_BYPOSITION, 0, NULL );
+	if(!m_bHasDir)
+	{
+		uMenuIndex++;
+		uidCmd++;
+		InsertMenu ( hmenu, uMenuIndex, MF_BYPOSITION, uidCmd, _T("¦r¹õÂ²ÂàÁc") );
+		// Set the bitmap.
+		if ( NULL != m_hIcon )
+			SetMenuItemBitmaps ( hmenu, uMenuIndex, MF_BYPOSITION, m_hIcon, NULL );
+	}
+
+	uMenuIndex++;
+	InsertMenu ( hmenu, uMenuIndex, MF_SEPARATOR|MF_BYPOSITION, 0, NULL );
 
 
-    return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, 1 );
+    return MAKE_HRESULT ( SEVERITY_SUCCESS, FACILITY_NULL, uidCmd - uidFirstCmd + 1 );
 }
 
 STDMETHODIMP CShooterContextMenuExt::GetCommandString (
@@ -149,6 +167,7 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 	switch ( LOWORD( pCmdInfo->lpVerb) )
 	{
 	case 0:
+	case 1:
 		{
 			TCHAR szShooterDir[MAX_PATH];
 			TCHAR szShooterDldrPath[MAX_PATH];
@@ -199,7 +218,17 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 			//Call ShooterDownloader and pass it the file list.
 			const static int PARAM_SIZE = 512;
 			TCHAR param[PARAM_SIZE];
-			_stprintf_s(param, PARAM_SIZE, _T("-lst=\"%s\" /r"), szTempFilePath);
+			if(LOWORD( pCmdInfo->lpVerb) == 0)
+			{
+				//download subtitle
+				_stprintf_s(param, PARAM_SIZE, _T("-lst=\"%s\" /r"), szTempFilePath);
+			}
+			else
+			{
+				//convert subtitle
+				_stprintf_s(param, PARAM_SIZE, _T("-lst=\"%s\" /r /c"), szTempFilePath);
+			}
+
 			ShellExecute(NULL, _T("Open"), szShooterDldrPath, param, NULL, SW_SHOWNORMAL);
 
 			return S_OK;
@@ -210,4 +239,12 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 		return E_INVALIDARG;
 		break;
 	}
+}
+
+bool CShooterContextMenuExt::IsDir(TCHAR* path)
+{
+	WIN32_FIND_DATA findData;
+	HANDLE hFile = FindFirstFile(path, &findData);
+
+	return (hFile != INVALID_HANDLE_VALUE) && (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 }

@@ -152,6 +152,12 @@ namespace ShooterDownloader
 
         public static ConversionResult ConvertChsToCht(string inFile, string outFile)
         {
+            return ConvertChsToCht(inFile, outFile, true);
+        }
+
+
+        public static ConversionResult ConvertChsToCht(string inFile, string outFile, bool detectEncoding)
+        {
             ConversionResult ret = ConversionResult.Error;
             StreamReader reader = null;
             FileStream outStream = null;
@@ -162,15 +168,23 @@ namespace ShooterDownloader
                 Encoding inEncoding = DetectEncoding(inFile);
                 if (inEncoding != null)
                 {
-                    //If the encoding is GB2312 or UTF8
-                    if (inEncoding.CodePage == 936 || inEncoding == Encoding.UTF8)
+                    if (!detectEncoding)
+                    {
+                        //if detectEncoding is false, overwrite the result of 
+                        //  encoding detection unless it's unicode.
+                        if (inEncoding != Encoding.UTF8 && inEncoding != Encoding.Unicode)
+                            inEncoding = Encoding.GetEncoding(936);
+                    }
+                    //If the encoding is GB2312 or Unicode
+                    if (inEncoding.CodePage == 936 || 
+                        inEncoding == Encoding.UTF8 || inEncoding == Encoding.Unicode)
                     {
                         reader = new StreamReader(inFile, inEncoding);
                         outStream = new FileStream(outFile, FileMode.OpenOrCreate);
                         Encoding outEncoding;
-                        if (inEncoding == Encoding.UTF8)
+                        if (inEncoding == Encoding.UTF8 || inEncoding == Encoding.Unicode)
                         {
-                            //if the encoding of the source is UTF8, output encoding should be UTF8 too.
+                            //if the encoding of the source is UTF8 or UTF16, output encoding should be Unicode too.
                             outEncoding = inEncoding;
                         }
                         else

@@ -41,7 +41,7 @@ namespace ShooterDownloader
                     File.Move(filePath, backupFilePath);
 
                     //If no conversion happened, restore the file.
-                    Util.ConversionResult ret = Util.ConvertChsToCht(backupFilePath, filePath);
+                    Util.ConversionResult ret = Util.ConvertChsToCht(backupFilePath, filePath, false);
                     if ( ret == Util.ConversionResult.NoConversion||
                         ret == Util.ConversionResult.Error)
                     {
@@ -51,7 +51,7 @@ namespace ShooterDownloader
                         File.Move(backupFilePath, filePath);
                     }
                 }
-                MessageBox.Show("Code Conversion Completed!!");
+                MessageBox.Show(Properties.Resources.InfoEasyConversionOk, Properties.Resources.InfoTitle);
             }
             else
             {
