@@ -199,7 +199,7 @@ STDMETHODIMP CShooterContextMenuExt::InvokeCommand ( LPCMINVOKECOMMANDINFO pCmdI
 			//Call ShooterDownloader and pass it the file list.
 			const static int PARAM_SIZE = 512;
 			TCHAR param[PARAM_SIZE];
-			_stprintf_s(param, PARAM_SIZE, _T("-tmp=\"%s\""), szTempFilePath);
+			_stprintf_s(param, PARAM_SIZE, _T("-lst=\"%s\" /r"), szTempFilePath);
 			ShellExecute(NULL, _T("Open"), szShooterDldrPath, param, NULL, SW_SHOWNORMAL);
 
 			return S_OK;

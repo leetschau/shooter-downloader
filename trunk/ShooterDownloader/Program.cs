@@ -18,6 +18,7 @@
 
 using System;
 using System.Windows.Forms;
+using System.IO;
 
 namespace ShooterDownloader
 {
@@ -34,7 +35,23 @@ namespace ShooterDownloader
             Application.SetCompatibleTextRenderingDefault(false);
             if (ArgMan.Instance.CodeConversionOnly)
             {
-                MessageBox.Show("Code Conversion!!");
+                foreach (string filePath in ArgMan.Instance.Files)
+                {
+                    string backupFilePath = String.Format("{0}.bak", filePath);
+                    File.Move(filePath, backupFilePath);
+
+                    //If no conversion happened, restore the file.
+                    Util.ConversionResult ret = Util.ConvertChsToCht(backupFilePath, filePath);
+                    if ( ret == Util.ConversionResult.NoConversion||
+                        ret == Util.ConversionResult.Error)
+                    {
+                        if (File.Exists(filePath))
+                            File.Delete(filePath);
+
+                        File.Move(backupFilePath, filePath);
+                    }
+                }
+                MessageBox.Show("Code Conversion Completed!!");
             }
             else
             {
