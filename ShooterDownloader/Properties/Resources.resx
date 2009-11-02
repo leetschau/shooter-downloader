@@ -153,6 +153,9 @@
   <data name="InfoDisableShellExtOk" xml:space="preserve">
     <value>停用右鍵選單功能成功</value>
   </data>
+  <data name="InfoEasyConversionOk" xml:space="preserve">
+    <value>字幕簡轉繁完成</value>
+  </data>
   <data name="InfoEnableShellExtOk" xml:space="preserve">
     <value>啟用右鍵選單功能成功</value>
   </data>

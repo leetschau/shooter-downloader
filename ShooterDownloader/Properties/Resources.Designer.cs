@@ -169,6 +169,15 @@ namespace ShooterDownloader.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 字幕簡轉繁完成.
+        /// </summary>
+        internal static string InfoEasyConversionOk {
+            get {
+                return ResourceManager.GetString("InfoEasyConversionOk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 啟用右鍵選單功能成功.
         /// </summary>
         internal static string InfoEnableShellExtOk {

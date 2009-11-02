@@ -69,8 +69,10 @@ public:
 	STDMETHODIMP QueryContextMenu(HMENU, UINT, UINT, UINT, UINT);
 
 private:
+	bool IsDir(TCHAR* path);
 	StringList m_fileList;
 	HBITMAP    m_hIcon;
+	bool m_bHasDir;
 
 };
 
