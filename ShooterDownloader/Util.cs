@@ -160,34 +160,50 @@ namespace ShooterDownloader
             try
             {
                 Encoding inEncoding = DetectEncoding(inFile);
-                if (inEncoding != null && inEncoding.CodePage == 936)  //If the encoding is GB2312
+                if (inEncoding != null)
                 {
-                    reader = new StreamReader(inFile, inEncoding);
-                    outStream = new FileStream(outFile, FileMode.OpenOrCreate);
-                    Encoding outEncoding = Encoding.GetEncoding("Big5");
-                    writer = new StreamWriter(outStream, outEncoding);
-                    string line = null;
-                    while ((line = reader.ReadLine()) != null)
+                    //If the encoding is GB2312 or UTF8
+                    if (inEncoding.CodePage == 936 || inEncoding == Encoding.UTF8)
                     {
-                        string chtLine = new String(' ', line.Length);
-                        LCMapString(LOCALE_TAIWAN, LCMAP_TRADITIONAL_CHINESE
-                            , line, line.Length, chtLine, chtLine.Length);
-                        writer.WriteLine(chtLine);
+                        reader = new StreamReader(inFile, inEncoding);
+                        outStream = new FileStream(outFile, FileMode.OpenOrCreate);
+                        Encoding outEncoding;
+                        if (inEncoding == Encoding.UTF8)
+                        {
+                            //if the encoding of the source is UTF8, output encoding should be UTF8 too.
+                            outEncoding = inEncoding;
+                        }
+                        else
+                        {
+                            outEncoding = Encoding.GetEncoding("Big5");
+                        }
+                        writer = new StreamWriter(outStream, outEncoding);
+                        string line = null;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            string chtLine = new String(' ', line.Length);
+                            LCMapString(LOCALE_TAIWAN, LCMAP_TRADITIONAL_CHINESE
+                                , line, line.Length, chtLine, chtLine.Length);
+                            writer.WriteLine(chtLine);
+                        }
+
+                        ret = ConversionResult.OK;
                     }
-
-
-                    ret = ConversionResult.OK;
-
+                    else
+                    {
+                        ret = ConversionResult.NoConversion;
+                    }
                 }
                 else
                 {
-                    ret = ConversionResult.NoConversion;
+                    ret = ConversionResult.Error;
                 }
 
             }
             catch (Exception ex)
             {
                 LogMan.Instance.Log(ex.Message);
+                ret = ConversionResult.Error;
             }
             finally
             {
