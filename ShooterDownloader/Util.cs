@@ -171,12 +171,13 @@ namespace ShooterDownloader
                     if (!detectEncoding)
                     {
                         //if detectEncoding is false, overwrite the result of 
-                        //  encoding detection unless it's unicode.
-                        if (inEncoding != Encoding.UTF8 && inEncoding != Encoding.Unicode)
+                        //  encoding detection unless it's GB or unicode.
+                        if (inEncoding.CodePage != 936 && inEncoding.CodePage != 54936 &&
+                            inEncoding != Encoding.UTF8 && inEncoding != Encoding.Unicode)
                             inEncoding = Encoding.GetEncoding(936);
                     }
-                    //If the encoding is GB2312 or Unicode
-                    if (inEncoding.CodePage == 936 || 
+                    //If the encoding is GB2312, GB18030 or Unicode
+                    if (inEncoding.CodePage == 936 || inEncoding.CodePage == 54936 ||
                         inEncoding == Encoding.UTF8 || inEncoding == Encoding.Unicode)
                     {
                         reader = new StreamReader(inFile, inEncoding);
@@ -258,7 +259,7 @@ namespace ShooterDownloader
             Encoding encoding = null;
 
 
-            nsDetector det = new nsDetector();
+            nsDetector det = new nsDetector(2);
             Notifier not = new Notifier();
             det.Init(not);
 
@@ -267,6 +268,11 @@ namespace ShooterDownloader
 
             byte[] buf = new byte[1024];
             int len = fs.Read(buf, 0, buf.Length);
+
+            //For some reason NCharDet can't detect Unicode.
+            //Manual detect Unicode here.
+            if (len >= 2 && buf[0] == 0xFF && buf[1] == 0xFE)
+                return Encoding.Unicode;
 
             while (len > 0)
             {
@@ -277,6 +283,9 @@ namespace ShooterDownloader
                 // DoIt if non-ascii and not done yet.
                 if (!isAscii && !done)
                     done = det.DoIt(buf, len, false);
+
+                if (done)
+                    break;
 
                 len = fs.Read(buf, 0, buf.Length);
             }

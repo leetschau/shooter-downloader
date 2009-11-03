@@ -10,7 +10,7 @@ namespace ShooterDownloader
     {
         private static ArgMan _instance = null;
         private static object _instanceLock = new Object();
-        private string[] _files = null;
+        private string[] _files = {""};
         private bool _codeConversion = false;
         private bool _useListFile = false;
         private bool _removeListFile = false;
