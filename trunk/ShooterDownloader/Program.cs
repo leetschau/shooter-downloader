@@ -37,18 +37,24 @@ namespace ShooterDownloader
             {
                 foreach (string filePath in ArgMan.Instance.Files)
                 {
-                    string backupFilePath = String.Format("{0}.bak", filePath);
-                    File.Move(filePath, backupFilePath);
-
-                    //If no conversion happened, restore the file.
-                    Util.ConversionResult ret = Util.ConvertChsToCht(backupFilePath, filePath, false);
-                    if ( ret == Util.ConversionResult.NoConversion||
-                        ret == Util.ConversionResult.Error)
+                    if (File.Exists(filePath))
                     {
-                        if (File.Exists(filePath))
-                            File.Delete(filePath);
+                        string backupFilePath = String.Format("{0}.bak", filePath);
+                        //Cleanup existing backup file.
+                        if (File.Exists(backupFilePath))
+                            File.Delete(backupFilePath);
+                        File.Move(filePath, backupFilePath);
 
-                        File.Move(backupFilePath, filePath);
+                        //If no conversion happened, restore the file.
+                        Util.ConversionResult ret = Util.ConvertChsToCht(backupFilePath, filePath, false);
+                        if (ret == Util.ConversionResult.NoConversion ||
+                            ret == Util.ConversionResult.Error)
+                        {
+                            if (File.Exists(filePath))
+                                File.Delete(filePath);
+
+                            File.Move(backupFilePath, filePath);
+                        }
                     }
                 }
                 MessageBox.Show(Properties.Resources.InfoEasyConversionOk, Properties.Resources.InfoTitle);
