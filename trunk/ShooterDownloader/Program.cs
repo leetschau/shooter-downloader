@@ -33,8 +33,9 @@ namespace ShooterDownloader
             ArgMan.Instance.ParseArgs(args);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (ArgMan.Instance.CodeConversionOnly)
+            if (ArgMan.Instance.CodeConversionOnly && ArgMan.Instance.Files != null)
             {
+                
                 foreach (string filePath in ArgMan.Instance.Files)
                 {
                     if (File.Exists(filePath))
@@ -57,6 +58,7 @@ namespace ShooterDownloader
                         }
                     }
                 }
+                
                 MessageBox.Show(Properties.Resources.InfoEasyConversionOk, Properties.Resources.InfoTitle);
             }
             else

@@ -50,7 +50,8 @@ namespace ShooterDownloader
 
         private void DownloadForm_Load(object sender, EventArgs e)
         {
-            if (ArgMan.Instance.Files != null)
+            if (ArgMan.Instance.Files != null && 
+                ArgMan.Instance.Files.Length > 0)
             {
                 SelectPaths(ArgMan.Instance.Files);
             }
