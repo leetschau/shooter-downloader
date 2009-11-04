@@ -186,7 +186,7 @@ namespace ShooterDownloader
                         if (inEncoding == Encoding.UTF8 || inEncoding == Encoding.Unicode)
                         {
                             //if the encoding of the source is UTF8 or UTF16, output encoding should be Unicode too.
-                            outEncoding = inEncoding;
+                            outEncoding = (Encoding) inEncoding;
                         }
                         else
                         {
@@ -272,7 +272,11 @@ namespace ShooterDownloader
             //For some reason NCharDet can't detect Unicode.
             //Manual detect Unicode here.
             if (len >= 2 && buf[0] == 0xFF && buf[1] == 0xFE)
+            {
+                fs.Close();
+                det.DataEnd();
                 return Encoding.Unicode;
+            }
 
             while (len > 0)
             {
@@ -283,9 +287,6 @@ namespace ShooterDownloader
                 // DoIt if non-ascii and not done yet.
                 if (!isAscii && !done)
                     done = det.DoIt(buf, len, false);
-
-                if (done)
-                    break;
 
                 len = fs.Read(buf, 0, buf.Length);
             }
