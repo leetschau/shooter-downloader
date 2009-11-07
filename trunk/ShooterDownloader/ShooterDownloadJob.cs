@@ -179,6 +179,9 @@ namespace ShooterDownloader
 
             if (bRespOk)
             {
+                //Update progress
+                UpdateProgress(90);
+
                 //Extract subtitle
                 ShooterSubExtractor extractor = new ShooterSubExtractor();
                 extractor.VideoFilePath = filePath;
