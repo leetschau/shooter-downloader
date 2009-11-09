@@ -40,8 +40,46 @@ namespace ShooterDownloader
                 cbConcurrenctNum.Items.Add(i);
             }
 
+            for (int i = ShooterConst.MinHttpTimeout; i <= ShooterConst.MaxHttpTimeout; 
+                i += ShooterConst.HttpTimeoutIncrement)
+            {
+                cbHttpTimeout.Items.Add(i);
+            }
+
             UpdateShellExtButton();
             
+        }
+
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+            //Load settings and check value format.
+
+            //1 <= concurrentNum <= ShooterConst.MaxConcurrentJobs
+            int concurrentNum = 
+                Util.GetGetBoundedValue(Properties.Settings.Default.MaxConcurrentJobs, 
+                    1, ShooterConst.MaxConcurrentJobs);
+            SelectCbItemByValue(cbConcurrenctNum, concurrentNum);
+            
+            int maxHttpTimeout =
+                Util.GetGetBoundedValue(Properties.Settings.Default.HttpTimeout,
+                    ShooterConst.MinHttpTimeout, ShooterConst.MaxHttpTimeout);
+            maxHttpTimeout = maxHttpTimeout - (maxHttpTimeout % 10);
+            SelectCbItemByValue(cbHttpTimeout, maxHttpTimeout);
+
+            txtVideoFileExt.Text = Properties.Settings.Default.VideoFileExt;
+
+            chkEnableLog.Checked = Properties.Settings.Default.EnableLog;
+
+            chkEnableConvert.Checked = Properties.Settings.Default.AutoChsToChtConversion;
+
+            if (concurrentNum != Properties.Settings.Default.MaxConcurrentJobs)
+                _formIsDirty = true;
+            else if (maxHttpTimeout != Properties.Settings.Default.HttpTimeout)
+                _formIsDirty = true;
+            else
+                _formIsDirty = false;
+
+            Util.AddShieldToButton(btnEnableShellExt);
         }
 
         //Indicate at least one of the setting
@@ -74,11 +112,17 @@ namespace ShooterDownloader
         {
             DialogResult = DialogResult.OK;
 
-            Properties.Settings.Default.MaxConcurrentJobs = cbConcurrenctNum.SelectedIndex + 1;
-            Properties.Settings.Default.VideoFileExt = txtVideoFileExt.Text;
-            Properties.Settings.Default.EnableLog = chkEnableLog.Checked;
-            Properties.Settings.Default.AutoChsToChtConversion = chkEnableConvert.Checked;
-            Properties.Settings.Default.Save();
+            if (_formIsDirty)
+            {
+                Properties.Settings.Default.MaxConcurrentJobs = 
+                    GetCbSelectedValueInt(cbConcurrenctNum, 1);
+                Properties.Settings.Default.VideoFileExt = txtVideoFileExt.Text;
+                Properties.Settings.Default.EnableLog = chkEnableLog.Checked;
+                Properties.Settings.Default.AutoChsToChtConversion = chkEnableConvert.Checked;
+                Properties.Settings.Default.HttpTimeout = 
+                    GetCbSelectedValueInt(cbHttpTimeout, ShooterConst.MaxHttpTimeout);
+                Properties.Settings.Default.Save();
+            }
 
             Close();
         }
@@ -89,23 +133,7 @@ namespace ShooterDownloader
             Close();
         }
 
-        private void SettingsForm_Load(object sender, EventArgs e)
-        {          
-            //1 <= concurrentNum <= ShooterConst.MaxConcurrentJobs
-            int concurrentNum = Math.Min(Properties.Settings.Default.MaxConcurrentJobs, ShooterConst.MaxConcurrentJobs);
-            concurrentNum = Math.Max(1, concurrentNum);
-            cbConcurrenctNum.SelectedIndex = concurrentNum - 1;
-
-            txtVideoFileExt.Text = Properties.Settings.Default.VideoFileExt;
-
-            chkEnableLog.Checked = Properties.Settings.Default.EnableLog;
-
-            chkEnableConvert.Checked = Properties.Settings.Default.AutoChsToChtConversion;
-
-            _formIsDirty = false;
-
-            Util.AddShieldToButton(btnEnableShellExt);
-        }
+        
 
         private void btnOpenLogFolder_Click(object sender, EventArgs e)
         {
@@ -119,6 +147,11 @@ namespace ShooterDownloader
         }
 
         private void cbConcurrenctNum_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _formIsDirty = true;
+        }
+
+        private void cbHttpTimeout_SelectedIndexChanged(object sender, EventArgs e)
         {
             _formIsDirty = true;
         }
@@ -211,7 +244,32 @@ namespace ShooterDownloader
             }
         }
 
-        
-        
+        private static void SelectCbItemByValue(ComboBox cb, object value)
+        {
+            for (int i = 0; i < cb.Items.Count; i++)
+            {
+                if (cb.Items[i].ToString() == value.ToString())
+                {
+                    cb.SelectedIndex = i;
+                    return;
+                }
+            }
+        }
+
+        private static int GetCbSelectedValueInt(ComboBox cb, int defaultValue)
+        {
+            int value;
+            try
+            {
+                value = Int32.Parse(cb.Text);
+            }
+            catch (Exception)
+            {
+                value = defaultValue;
+            }
+
+            return value;
+        }
+
     }
 }
