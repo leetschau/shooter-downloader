@@ -441,6 +441,14 @@ namespace ShooterDownloader
             }
         }
 
+        public static int GetGetBoundedValue(int intendValue, int lowerBound, int upperBound)
+        {
+            int trueValue;
+            trueValue = Math.Min(intendValue, upperBound);
+            trueValue = Math.Max(lowerBound, intendValue);
+            return trueValue;
+        }
+
     }
 
     //For BytesToInt32

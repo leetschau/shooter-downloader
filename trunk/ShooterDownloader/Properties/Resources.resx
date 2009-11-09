@@ -153,6 +153,9 @@
   <data name="InfoDisableShellExtOk" xml:space="preserve">
     <value>停用右鍵選單功能成功</value>
   </data>
+  <data name="InfoDownloadCanceled" xml:space="preserve">
+    <value>下載已取消</value>
+  </data>
   <data name="InfoEasyConversionOk" xml:space="preserve">
     <value>字幕簡轉繁完成</value>
   </data>
@@ -186,10 +189,19 @@
   <data name="ProgressNoSub" xml:space="preserve">
     <value>無字幕</value>
   </data>
+  <data name="UiCancelDownload" xml:space="preserve">
+    <value>取消下載</value>
+  </data>
+  <data name="UiCanceling" xml:space="preserve">
+    <value>取消中...</value>
+  </data>
   <data name="UiDisableShellExt" xml:space="preserve">
     <value>停用右鍵選單功能</value>
   </data>
   <data name="UiEnableShellExt" xml:space="preserve">
     <value>啟用右鍵選單功能</value>
+  </data>
+  <data name="UiStartDownload" xml:space="preserve">
+    <value>開始下載</value>
   </data>
 </root>

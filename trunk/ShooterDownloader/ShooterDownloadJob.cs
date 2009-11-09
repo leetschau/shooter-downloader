@@ -33,6 +33,7 @@ namespace ShooterDownloader
         private string _videoFilePath = String.Empty;
         private int _jobId = -1;
         private string _videoFileName = String.Empty;
+        private int _httpTimeout; //in milliseconds
 
         #region IJob Members
 
@@ -78,6 +79,7 @@ namespace ShooterDownloader
             _userAgent = Settings.Default.UserAgent;
             _contentType = Settings.Default.ContentType;
             _boundary = Settings.Default.Boundary;
+            _httpTimeout = Settings.Default.HttpTimeout * 1000;
         }
 
         public string VideoFilePath
@@ -107,6 +109,7 @@ namespace ShooterDownloader
             request.UserAgent = _userAgent;
             request.ContentType = _contentType;
             request.ContentLength = formDataUtf8.Length;
+            request.Timeout = _httpTimeout;
             Stream requestStream = null;
             bool bReqOk = false;
             try

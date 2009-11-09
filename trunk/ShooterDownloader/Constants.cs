@@ -24,5 +24,8 @@ namespace ShooterDownloader
         public const int Error = -1;
         public const int NoSubFound = -2;
         public const int MaxConcurrentJobs = 3;
+        public const int MaxHttpTimeout = 60;
+        public const int MinHttpTimeout = 10;
+        public const int HttpTimeoutIncrement = 10;
     }
 }

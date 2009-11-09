@@ -32,8 +32,10 @@ namespace ShooterDownloader
         private string _lastDir = String.Empty;
         private string _videoFileExt = String.Empty;
         private int _currentMaxJobs = 0;
-        private delegate void EnableInputCallback();
+        //private delegate void EnableInputCallback();
+        private delegate void ChangeUIStatusCallBack(UIStatus uiStatus);
         SettingsForm _settingsForm;
+        private volatile UIStatus _currentUIStatus = UIStatus.StandBy;
 
         public DownloadForm()
         {
@@ -85,7 +87,9 @@ namespace ShooterDownloader
         public void Log(string message, params Object[] args)
         {
             string formatMessage = String.Format(message, args);
-            if (this.InvokeRequired)
+
+            //Write log while the JobQueue is canceling will cause a deadlock.
+            if (this.InvokeRequired && _currentUIStatus != UIStatus.Canceling)
             {
                 SetLogTextCallback d = new SetLogTextCallback(SetLogText);
                 this.Invoke(d, new object[] { formatMessage });
@@ -131,11 +135,15 @@ namespace ShooterDownloader
             {
                 if (_jobQueue != null)
                 {
-                    _jobQueue.Close();
+                    //_jobQueue.Close();
+                    _jobQueue.Reset(maxJobs);
                 }
-                _jobQueue = new JobQueue(maxJobs);
-                _jobQueue.AllDone +=new AllDoneHandler(AllDownloadComplete);
-                _jobQueue.Start();
+                else
+                {
+                    _jobQueue = new JobQueue(maxJobs);
+                    _jobQueue.AllDone += new AllDoneHandler(AllDownloadComplete);
+                    _jobQueue.Start();
+                }              
             }
         }
 
@@ -249,33 +257,53 @@ namespace ShooterDownloader
             else
             {
                 dgvFileList.Rows[jobId].Cells["StatusColumn"].Value = progress.ToString() + "%";
+                
+                //If download is completed.
+                if (progress == 100)
+                {
+                    //Uncheck the column.
+                    dgvFileList.Rows[jobId].Cells["CheckBoxColumn"].Value = false;
+                    //Makes it easier to resume the download if it's canceled by user.
+                }
             }
         }
 
         private void btnStartBatch_Click(object sender, EventArgs e)
         {
-            bool shouldDisableInput = true;
-
-            foreach (DataGridViewRow row in dgvFileList.Rows)
+            if (_currentUIStatus == UIStatus.StandBy)
             {
-                if ((bool)row.Cells["CheckBoxColumn"].Value == true)
-                {
-                    if (shouldDisableInput == true)
-                    {
-                        //disable input if there is at least one checked column.
-                        DisableInput();
-                        ClearDownloadStatus();
-                        shouldDisableInput = false;
-                    }
-                    string filePath = (string)row.Cells["FullPathColumn"].Value;
+                bool shouldDisableInput = true;
 
-                    ShooterDownloadJob dlJob = new ShooterDownloadJob();
-                    dlJob.VideoFilePath = filePath;
-                    dlJob.JobId = row.Index;
-                    dlJob.ProgressUpdate += new ProgressHandler(OnDownloadStatusUpdate);
-                    _jobQueue.AddJob(dlJob);
+                foreach (DataGridViewRow row in dgvFileList.Rows)
+                {
+                    if ((bool)row.Cells["CheckBoxColumn"].Value == true)
+                    {
+                        if (shouldDisableInput == true)
+                        {
+                            //disable input if there is at least one checked column.
+                            //DisableInput();
+                            ChangeUIStatus(UIStatus.Downloading);
+                            ClearDownloadStatus();
+                            shouldDisableInput = false;
+                        }
+                        string filePath = (string)row.Cells["FullPathColumn"].Value;
+
+                        ShooterDownloadJob dlJob = new ShooterDownloadJob();
+                        dlJob.VideoFilePath = filePath;
+                        dlJob.JobId = row.Index;
+                        dlJob.ProgressUpdate += new ProgressHandler(OnDownloadStatusUpdate);
+                        _jobQueue.AddJob(dlJob);
+                    }
                 }
-            }          
+            }
+            else if (_currentUIStatus == UIStatus.Downloading)
+            {
+                //Cancel Download
+                ChangeUIStatus(UIStatus.Canceling);
+                _jobQueue.Reset();
+                ChangeUIStatus(UIStatus.StandBy);
+                LogMan.Instance.Log(Properties.Resources.InfoDownloadCanceled);
+            }
         }
 
         private void btnSelectAll_Click(object sender, EventArgs e)
@@ -309,44 +337,108 @@ namespace ShooterDownloader
             
             if (this.InvokeRequired)
             {
-                EnableInputCallback d = new EnableInputCallback(EnableInput);
-                this.Invoke(d);
+                //EnableInputCallback d = new EnableInputCallback(EnableInput);
+                ChangeUIStatusCallBack d = new ChangeUIStatusCallBack(ChangeUIStatus);
+                //this.Invoke(d);
+                this.Invoke(d, new object[] {UIStatus.StandBy});
             }
             else
             {
-                EnableInput();
+                //EnableInput();
+                ChangeUIStatus(UIStatus.StandBy);
             }
         }
 
-        private void EnableInput()
+        private enum UIStatus
         {
-            btnSelectDir.Enabled = true;
-            btnSettings.Enabled = true;
-            dgvFileList.Columns["CheckBoxColumn"].ReadOnly = false;
-            btnSelectAll.Enabled = true;
-            btnSelectNone.Enabled = true;
-            btnStartBatch.Enabled = true;
-            this.Cursor = Cursors.Default;
-            foreach (Control ctrl in this.Controls)
-            {
-                ctrl.Cursor = Cursors.Default;
-            }
+            StandBy,
+            Downloading,
+            Canceling
         }
 
-        private void DisableInput()
+        private void ChangeUIStatus(UIStatus uiStatus)
         {
-            btnSelectDir.Enabled = false;
-            btnSettings.Enabled = false;
-            dgvFileList.Columns["CheckBoxColumn"].ReadOnly = true;
-            btnSelectAll.Enabled = false;
-            btnSelectNone.Enabled = false;
-            btnStartBatch.Enabled = false;
-            this.Cursor = Cursors.WaitCursor;
-            foreach (Control ctrl in this.Controls)
+            if (uiStatus == _currentUIStatus)
+                return;
+
+            switch (uiStatus)
             {
-                ctrl.Cursor = Cursors.WaitCursor;
+                case UIStatus.StandBy:
+                    btnSelectDir.Enabled = true;
+                    btnSettings.Enabled = true;
+                    dgvFileList.Columns["CheckBoxColumn"].ReadOnly = false;
+                    btnSelectAll.Enabled = true;
+                    btnSelectNone.Enabled = true;
+                    btnStartBatch.Enabled = true;
+                    btnStartBatch.Text = Properties.Resources.UiStartDownload;
+                    this.Cursor = Cursors.Default;
+                    foreach (Control ctrl in this.Controls)
+                    {
+                        ctrl.Cursor = Cursors.Default;
+                    }
+                    break;
+                case UIStatus.Downloading:
+                    btnSelectDir.Enabled = false;
+                    btnSettings.Enabled = false;
+                    dgvFileList.Columns["CheckBoxColumn"].ReadOnly = true;
+                    btnSelectAll.Enabled = false;
+                    btnSelectNone.Enabled = false;
+                    //btnStartBatch.Enabled = false;
+                    btnStartBatch.Text = Properties.Resources.UiCancelDownload;
+                    this.Cursor = Cursors.WaitCursor;
+                    foreach (Control ctrl in this.Controls)
+                    {
+                        ctrl.Cursor = Cursors.WaitCursor;
+                    }
+                    break;
+                case UIStatus.Canceling:
+                    btnSelectDir.Enabled = false;
+                    btnSettings.Enabled = false;
+                    dgvFileList.Columns["CheckBoxColumn"].ReadOnly = true;
+                    btnSelectAll.Enabled = false;
+                    btnSelectNone.Enabled = false;
+                    btnStartBatch.Enabled = false;
+                    btnStartBatch.Text = Properties.Resources.UiCanceling;
+                    this.Cursor = Cursors.WaitCursor;
+                    foreach (Control ctrl in this.Controls)
+                    {
+                        ctrl.Cursor = Cursors.WaitCursor;
+                    }
+                    break;
             }
+
+            _currentUIStatus = uiStatus;
         }
+
+        //private void EnableInput()
+        //{
+        //    btnSelectDir.Enabled = true;
+        //    btnSettings.Enabled = true;
+        //    dgvFileList.Columns["CheckBoxColumn"].ReadOnly = false;
+        //    btnSelectAll.Enabled = true;
+        //    btnSelectNone.Enabled = true;
+        //    btnStartBatch.Enabled = true;
+        //    this.Cursor = Cursors.Default;
+        //    foreach (Control ctrl in this.Controls)
+        //    {
+        //        ctrl.Cursor = Cursors.Default;
+        //    }
+        //}
+
+        //private void DisableInput()
+        //{
+        //    btnSelectDir.Enabled = false;
+        //    btnSettings.Enabled = false;
+        //    dgvFileList.Columns["CheckBoxColumn"].ReadOnly = true;
+        //    btnSelectAll.Enabled = false;
+        //    btnSelectNone.Enabled = false;
+        //    btnStartBatch.Enabled = false;
+        //    this.Cursor = Cursors.WaitCursor;
+        //    foreach (Control ctrl in this.Controls)
+        //    {
+        //        ctrl.Cursor = Cursors.WaitCursor;
+        //    }
+        //}
 
         private void ClearDownloadStatus()
         {

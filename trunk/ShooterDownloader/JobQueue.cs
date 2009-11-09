@@ -35,8 +35,12 @@ namespace ShooterDownloader
         public JobQueue(int maxJobs)
         {
             _pendingJobs = new Queue<IJob>();
-            _maxConcurrentJobs = Math.Min(maxJobs, ShooterConst.MaxConcurrentJobs);
-            _maxConcurrentJobs = Math.Max(1, _maxConcurrentJobs);
+            _maxConcurrentJobs = Util.GetGetBoundedValue(maxJobs, 1, ShooterConst.MaxConcurrentJobs);
+            InitializeJobHandler();
+        }
+
+        private void InitializeJobHandler()
+        {
             _jobHandlers = new Thread[_maxConcurrentJobs];
             for (int i = 0; i < _maxConcurrentJobs; i++)
             {
@@ -81,6 +85,7 @@ namespace ShooterDownloader
 
         public void Start()
         {
+            _continue = true;
             foreach (Thread jobHandler in _jobHandlers)
             {
                 jobHandler.Start();
@@ -99,6 +104,24 @@ namespace ShooterDownloader
             {
                 jobHandler.Join();
             }
+
+            _pendingJobs.Clear();
+            _jobsCount = 0;
+        }
+
+        public void Reset()
+        {
+            Reset(_maxConcurrentJobs);
+        }
+
+        public void Reset(int newMaxJobs)
+        {
+            Close();
+
+            _maxConcurrentJobs = Util.GetGetBoundedValue(newMaxJobs, 1, ShooterConst.MaxConcurrentJobs);
+            InitializeJobHandler();
+
+            Start();
         }
 
         private void JobHandler()
