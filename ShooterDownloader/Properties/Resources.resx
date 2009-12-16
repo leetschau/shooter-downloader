@@ -150,6 +150,9 @@
   <data name="InfoChtConversionOk" xml:space="preserve">
     <value>{0} 簡轉繁成功</value>
   </data>
+  <data name="InfoDisabledInThisOs" xml:space="preserve">
+    <value>此功能在當前的作業系統中無法使用</value>
+  </data>
   <data name="InfoDisableShellExtOk" xml:space="preserve">
     <value>停用右鍵選單功能成功</value>
   </data>
