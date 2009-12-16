@@ -107,6 +107,7 @@
     <Compile Include="FormData.cs" />
     <Compile Include="JobQueue.cs" />
     <Compile Include="LogMan.cs" />
+    <Compile Include="OsDependent\UtilAny.cs" />
     <Compile Include="SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -148,6 +149,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ShooterSubExtractor.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="OsDependent\UtilWin.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

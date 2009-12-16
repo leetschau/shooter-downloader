@@ -21,11 +21,11 @@ using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 using System.IO.Compression;
-using System.Runtime.InteropServices;
+
 using org.mozilla.intl.chardet;
 using System.Diagnostics;
-using System.Security.Principal;
 using System.Windows.Forms;
+
 
 namespace ShooterDownloader
 {
@@ -132,16 +132,14 @@ namespace ShooterDownloader
             return ret;
         }
 
-
-        //For ConvertChsToCht
-        private const int LOCALE_SYSTEM_DEFAULT = 0x0800;
-        private const int LOCALE_TAIWAN = 1028;
-        private const int LCMAP_SIMPLIFIED_CHINESE = 0x02000000;
-        private const int LCMAP_TRADITIONAL_CHINESE = 0x04000000;
-
-        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int LCMapString(int Locale, int dwMapFlags, string lpSrcStr, int cchSrc
-            , [Out] string lpDestStr, int cchDest);
+        public static int GetGetBoundedValue(int intendValue, int lowerBound, int upperBound)
+        {
+            int trueValue;
+            trueValue = Math.Min(intendValue, upperBound);
+            trueValue = Math.Max(lowerBound, intendValue);
+            return trueValue;
+        }
+        
 
         public enum ConversionResult
         {
@@ -150,95 +148,16 @@ namespace ShooterDownloader
             Error
         }
 
+
+        #region OS Dependent Code
         public static ConversionResult ConvertChsToCht(string inFile, string outFile)
         {
             return ConvertChsToCht(inFile, outFile, true);
         }
 
-
         public static ConversionResult ConvertChsToCht(string inFile, string outFile, bool detectEncoding)
         {
-            ConversionResult ret = ConversionResult.Error;
-            StreamReader reader = null;
-            FileStream outStream = null;
-            StreamWriter writer = null;
-
-            try
-            {
-                Encoding inEncoding = DetectEncoding(inFile);
-                if (inEncoding != null)
-                {
-                    if (!detectEncoding)
-                    {
-                        //if detectEncoding is false, overwrite the result of 
-                        //  encoding detection unless it's GB or unicode.
-                        if (inEncoding.CodePage != 936 && inEncoding.CodePage != 54936 &&
-                            inEncoding != Encoding.UTF8 && inEncoding != Encoding.Unicode)
-                            inEncoding = Encoding.GetEncoding(936);
-                    }
-                    //If the encoding is GB2312, GB18030 or Unicode
-                    if (inEncoding.CodePage == 936 || inEncoding.CodePage == 54936 ||
-                        inEncoding == Encoding.UTF8 || inEncoding == Encoding.Unicode)
-                    {
-                        reader = new StreamReader(inFile, inEncoding);
-                        outStream = new FileStream(outFile, FileMode.OpenOrCreate);
-                        Encoding outEncoding;
-                        if (inEncoding == Encoding.UTF8 || inEncoding == Encoding.Unicode)
-                        {
-                            //if the encoding of the source is UTF8 or UTF16, output encoding should be Unicode too.
-                            outEncoding = (Encoding) inEncoding;
-                        }
-                        else
-                        {
-                            outEncoding = Encoding.GetEncoding("Big5");
-                        }
-                        writer = new StreamWriter(outStream, outEncoding);
-                        string line = null;
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            string chtLine = new String(' ', line.Length);
-                            LCMapString(LOCALE_TAIWAN, LCMAP_TRADITIONAL_CHINESE
-                                , line, line.Length, chtLine, chtLine.Length);
-                            writer.WriteLine(chtLine);
-                        }
-
-                        ret = ConversionResult.OK;
-                    }
-                    else
-                    {
-                        ret = ConversionResult.NoConversion;
-                    }
-                }
-                else
-                {
-                    ret = ConversionResult.Error;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LogMan.Instance.Log(ex.Message);
-                ret = ConversionResult.Error;
-            }
-            finally
-            {
-                if (reader != null)
-                {
-                    reader.Close();
-                }
-
-                if (writer != null)
-                {
-                    writer.Close();
-                }
-                else if (outStream != null)
-                {
-                    outStream.Close();
-                }
-
-            }
-
-            return ret;
+            return OsUtil.ConvertChsToCht(inFile, outFile, detectEncoding);
         }
 
         //For DetectEncoding
@@ -316,139 +235,88 @@ namespace ShooterDownloader
        
         public static void RunProc(string filePath, string args, bool needElevation)
         {
-            ProcessStartInfo procInfo = new ProcessStartInfo();
-            procInfo.UseShellExecute = true;
-            procInfo.FileName = filePath;
-            procInfo.Arguments = args;
-            procInfo.WorkingDirectory = Environment.CurrentDirectory;
-            if (needElevation)
-                procInfo.Verb = "runas";
-
-            Process proc = Process.Start(procInfo);
-            const int timeout = 5000;
-            //proc.WaitForInputIdle();
-            proc.WaitForExit(timeout);
+            OsUtil.RunProc(filePath, args, needElevation);
         }
 
         public static bool RegisterDll(string dllPath)
         {
-
-            string regsvr32Path = String.Format("\"{0}\\regsvr32.exe\"",
-                 Environment.GetFolderPath(Environment.SpecialFolder.System));
-            string arg = String.Format("/s \"{0}\"", dllPath);
-
-            try
-            {
-                //Need administrative privilege to register a COM DLL.
-                RunProc(regsvr32Path, arg, !IsAdmin);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return true;
+            return OsUtil.RegisterDll(dllPath);
         }
 
         public static bool UnregisterDll(string dllPath)
         {
-            string regsvr32Path = String.Format("\"{0}\\regsvr32.exe\"",
-                 Environment.GetFolderPath(Environment.SpecialFolder.System));
-            string arg = String.Format("/s /u \"{0}\"", dllPath);
-
-            try
-            {
-                //Need administrative privilege to register a COM DLL.
-                RunProc(regsvr32Path, arg, !IsAdmin);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return true;
+            return OsUtil.UnregisterDll(dllPath);
         }
 
         public static bool IsAdmin
         {
             get
             {
-                WindowsIdentity id = WindowsIdentity.GetCurrent();
-                WindowsPrincipal p = new WindowsPrincipal(id);
-                return p.IsInRole(WindowsBuiltInRole.Administrator);
+                return OsUtil.IsAdmin;
             }
         }
 
-        [DllImport("user32")]
-        private static extern UInt32 SendMessage(IntPtr hWnd, UInt32 msg, UInt32 wParam, UInt32 lParam);
-
-        private const int BCM_FIRST = 0x1600;
-        private const int BCM_SETSHIELD = (BCM_FIRST + 0x000C);
 
         //Add a shield ICON to the button to inform user privilege elevation is required.
         // Only work on Vista or above.
         public static void AddShieldToButton(Button b)
         {
-            b.FlatStyle = FlatStyle.System;
-            SendMessage(b.Handle, BCM_SETSHIELD, 0, 0xFFFFFFFF);
+            OsUtil.AddShieldToButton(b);
         }
-
-        private delegate bool IsWow64Process(
-            [In] IntPtr hProcess,
-            [Out] out bool wow64Process);
-        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr LoadLibrary(string path);
-        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern bool FreeLibrary(IntPtr hdl);
-        [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true)]
-        private static extern IntPtr GetProcAddress(IntPtr hdl, string name);
 
         public static bool Is64BitOS
         {
             get
             {
-                if (IntPtr.Size == 8)
-                {
-                    //Application running in 64-bit mode, must be 64-bit OS.
-                    return true;
-                }
-                else
-                {
-                    //Dynamicallt load kernel32 and call IsWow64Process.
-                    IntPtr module = LoadLibrary("Kernel32.dll");
-                    if (module == IntPtr.Zero)
-                    {
-                        return false;
-                    }
-
-                    IntPtr addr = GetProcAddress(module, "IsWow64Process");
-                    if (addr == IntPtr.Zero)
-                    {
-                        return false;
-                    }
-
-                    //Check if application is running in WOW64 mode.
-                    // IsWow64Process only works on Windows XP sp2 or above.
-                    //  Dynamically invoke it to avoid unnecessary dependency.
-                    IsWow64Process dlg = (IsWow64Process)Marshal.GetDelegateForFunctionPointer(addr, typeof(IsWow64Process));
-                    bool retval;
-                    dlg.Invoke(Process.GetCurrentProcess().Handle, out retval);
-
-                    return retval;
-                }
-                
-                
+                return OsUtil.Is64BitOS;
             }
         }
 
-        public static int GetGetBoundedValue(int intendValue, int lowerBound, int upperBound)
+        private static ShooterDownloader.OsDependent.UtilAny _osUtil = null;
+
+        public static bool IsWindows
         {
-            int trueValue;
-            trueValue = Math.Min(intendValue, upperBound);
-            trueValue = Math.Max(lowerBound, intendValue);
-            return trueValue;
+            get
+            {
+                bool result = false;
+                OperatingSystem os = Environment.OSVersion;
+                PlatformID pid = os.Platform;
+                switch (pid)
+                {
+                    case PlatformID.Win32NT:
+                    case PlatformID.Win32S:
+                    case PlatformID.Win32Windows:
+                    case PlatformID.WinCE:
+                        result = true;
+                        break;
+                }
+
+                return result;
+            }
         }
 
+        private static ShooterDownloader.OsDependent.UtilAny OsUtil
+        {
+            get
+            {
+                if (_osUtil == null)
+                {
+                    lock (_osUtil)
+                    {
+                        if (_osUtil == null)
+                        {
+                            if (IsWindows)
+                                _osUtil = new ShooterDownloader.OsDependent.UtilWin();
+                            else
+                                _osUtil = new ShooterDownloader.OsDependent.UtilAny();
+                        }
+                    }
+                }
+
+                return _osUtil;
+            }
+        }
+        #endregion
     }
 
     //For BytesToInt32

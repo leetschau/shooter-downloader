@@ -70,7 +70,7 @@ namespace ShooterDownloader
 
             chkEnableLog.Checked = Properties.Settings.Default.EnableLog;
 
-            chkEnableConvert.Checked = Properties.Settings.Default.AutoChsToChtConversion;
+            
 
             if (concurrentNum != Properties.Settings.Default.MaxConcurrentJobs)
                 _formIsDirty = true;
@@ -79,7 +79,22 @@ namespace ShooterDownloader
             else
                 _formIsDirty = false;
 
-            Util.AddShieldToButton(btnEnableShellExt);
+            if (Util.IsWindows)
+            {
+                chkEnableConvert.Checked = 
+                    Properties.Settings.Default.AutoChsToChtConversion;
+                Util.AddShieldToButton(btnEnableShellExt);
+            }
+            else
+            {
+                chkEnableConvert.Checked = false;
+                chkEnableConvert.Enabled = false;
+                toolTip.SetToolTip(
+                    chkEnableConvert, Properties.Resources.InfoDisabledInThisOs);
+                btnEnableShellExt.Enabled = false;
+                toolTip.SetToolTip(
+                    btnEnableShellExt, Properties.Resources.InfoDisabledInThisOs);
+            }
         }
 
         //Indicate at least one of the setting

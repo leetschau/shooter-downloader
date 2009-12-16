@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.chkEnableLog = new System.Windows.Forms.CheckBox();
             this.btnOk = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -42,6 +43,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cbHttpTimeout = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // chkEnableLog
@@ -233,5 +235,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox cbHttpTimeout;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }

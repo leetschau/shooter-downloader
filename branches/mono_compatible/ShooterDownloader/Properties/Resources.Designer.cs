@@ -160,6 +160,15 @@ namespace ShooterDownloader.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 此功能在當前的作業系統中無法使用.
+        /// </summary>
+        internal static string InfoDisabledInThisOs {
+            get {
+                return ResourceManager.GetString("InfoDisabledInThisOs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 停用右鍵選單功能成功.
         /// </summary>
         internal static string InfoDisableShellExtOk {
